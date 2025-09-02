@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Blinds Structure</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="close()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="blinds-structure-container">
+    <ion-card
+      *ngFor="let level of blindSchedule; let i = index"
+      [ngClass]="{
+        completed: i < currentLevel,
+        current: i === currentLevel,
+        upcoming: i > currentLevel
+      }"
+      [attr.id]="'level-' + i"
+      class="ion-no-margin"
+    >
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon
+            *ngIf="i < currentLevel"
+            name="checkmark-circle"
+            color="success"
+          ></ion-icon>
+          <ion-icon
+            *ngIf="i === currentLevel"
+            name="radio-button-on"
+            color="primary"
+          ></ion-icon>
+          <ion-icon
+            *ngIf="i > currentLevel"
+            name="ellipse-outline"
+            color="medium"
+          ></ion-icon>
+          Level {{ i + 1 }}
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content *ngIf="i === currentLevel || i > currentLevel">
+        <div class="blinds-details">
+          <div>
+            <span class="label">Small Blind : </span>
+            <span class="value">{{ level.blind }}</span>
+          </div>
+          <div>
+            <span class="label">Big Blind : </span>
+            <span class="value">{{ level.blind * 2 }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

@@ -1,0 +1,141 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <div class="user-info-container">
+        <ion-avatar>
+          <img src="assets/user-avatar.jpg" alt="User Avatar" />
+        </ion-avatar>
+        <div class="user-text">
+          <div class="welcome">Welcome back,</div>
+          <div class="username">Gowtham</div>
+        </div>
+      </div>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="openSettingsMenu()">
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-no-padding">
+  <!-- Initial Card -->
+
+  <ion-card *ngIf="gameStarted">
+    <ion-card-header>
+      <ion-card-title>Current Level: {{ currentLevel + 1 }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div><strong>Small Blind:</strong> {{ currentSmallBlind }}</div>
+      <div><strong>Big Blind:</strong> {{ currentBigBlind }}</div>
+      <div>
+        <strong>Time Left:</strong> {{ displayMinutes }}:{{ displaySeconds |
+        number: '2.0' }}
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Progress Bar -->
+
+  <ion-card *ngIf="currentLevelData">
+    <ion-card-header>
+      <ion-card-title class="card-title-flex">
+        <ion-icon name="radio-button-on" color="primary"></ion-icon>
+        Level {{ currentLevel + 1 }}
+        <span class="duration">({{ currentLevelData.time }} min)</span>
+      </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="progress-bar-container">
+        <div class="progress-bar-bg">
+          <div
+            class="progress-bar-fill"
+            [style.width.%]="getProgressPercent(currentLevelData.time)"
+          ></div>
+        </div>
+        <div class="progress-label">
+          {{ Math.floor(elapsedTime / 60) }}:{{ ('0' + (elapsedTime %
+          60)).slice(-2) }} / {{ currentLevelData.time }}:00 min
+        </div>
+      </div>
+      <div class="blinds-details">
+        <div>
+          <span class="label">Small Blind:</span>
+          <span class="value">{{ currentLevelData.blind }}</span>
+        </div>
+        <div>
+          <span class="label">Big Blind:</span>
+          <span class="value">{{ currentLevelData.blind * 2 }}</span>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Bottom input / Button -->
+
+  <div class="sticky-card">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Blind Settings</ion-card-title>
+        <ion-card-subtitle>Configure your tournament blinds</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content class="ion-no-padding">
+        <ion-item>
+          <ion-label position="floating">Starting Blind</ion-label>
+          <ion-input type="number" [(ngModel)]="startingBlind"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Blind Increase per Level</ion-label>
+          <ion-input type="number" [(ngModel)]="blindIncrease"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Level Duration (minutes)</ion-label>
+          <ion-input type="number" [(ngModel)]="levelDuration"></ion-input>
+        </ion-item>
+
+        <ion-row>
+          <ion-col>
+            <ion-button
+              expand="block"
+              color="success"
+              (click)="startGame()"
+              [disabled]="gameStarted"
+            >
+              Start
+            </ion-button>
+          </ion-col>
+          <ion-col>
+            <ion-button
+              expand="block"
+              color="warning"
+              (click)="togglePause()"
+              [disabled]="!gameStarted"
+            >
+              {{ isPaused ? 'Resume' : 'Pause' }}
+            </ion-button>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <ion-button expand="block" (click)="generateBlinds()">
+              Show Blinds
+            </ion-button>
+          </ion-col>
+          <ion-col>
+            <ion-button
+              expand="block"
+              color="danger"
+              (click)="restartGame()"
+              [disabled]="!gameStarted"
+            >
+              Restart
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+
+<app-menu />

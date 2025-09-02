@@ -1,0 +1,30 @@
+<ion-menu side="end" menuId="settingsMenu" contentId="main-content">
+  <ion-header>
+    <ion-toolbar color="light">
+      <ion-title>Settings</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content>
+    <!-- Add your settings content here -->
+    <ion-list>
+      <ion-item>Profile</ion-item>
+      <ion-item>Notifications</ion-item>
+      <ion-item>Theme</ion-item>
+      <ion-item>Logout</ion-item>
+      <ion-item>
+        <ion-label>Dark Mode</ion-label>
+        <ion-toggle
+          slot="end"
+          [(ngModel)]="darkMode"
+          (ionChange)="toggleDarkMode()"
+        ></ion-toggle>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-menu>
+
+<!-- Main Content Wrapper -->
+<div id="main-content">
+  <!-- Your existing header and page content go here -->
+  <!-- ... -->
+</div>
