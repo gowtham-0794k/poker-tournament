@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   ModalController,
   ToastController,
   MenuController,
 } from '@ionic/angular';
 import { BlindStructureComponent } from './blind-structure-component/blind-structure-component.component';
+import { BlindSettingsModalComponent } from './blind-settings-modal/blind-settings-modal.component';
 
 @Component({
   selector: 'app-timer',
@@ -12,24 +13,26 @@ import { BlindStructureComponent } from './blind-structure-component/blind-struc
   styleUrls: ['./timer.page.scss'],
   standalone: false,
 })
-export class TimerPage implements OnInit {
-  startingBlind: number = 100;
-  blindIncrease: number = 100;
-  levelDuration: number = 15;
+export class TimerPage implements OnInit, OnDestroy {
+  startingBlind = 100;
+  blindIncrease = 100;
+  levelDuration = 15;
   blindSchedule: { blind: number; time: number }[] = [];
 
-  // Timer and blinds
-  gameStarted: boolean = false;
-  currentLevel: number = 0;
-  currentSmallBlind: number = 0;
-  currentBigBlind: number = 0;
-  timeLeft: number = 0; // seconds
-  timer: any;
-  isPaused: boolean = false;
-  levelTimer: any; // Reference to the interval timer
-  elapsedTime = 0; // Seconds passed in current level
-  public Math = Math;
-  toastShown = false; // Add this flag
+  gameStarted = false;
+  currentLevel = 0;
+  currentSmallBlind = 0;
+  currentBigBlind = 0;
+  timeLeft = 0;
+  isPaused = false;
+  elapsedTime = 0;
+  toastShown = false;
+
+  private timer: any;
+  private levelTimer: any;
+  readonly Math = Math;
+  manualTime: string = '';
+  manualLevel: number | null = null;
 
   constructor(
     private modalController: ModalController,
@@ -38,6 +41,11 @@ export class TimerPage implements OnInit {
   ) {}
 
   ngOnInit() {}
+
+  ngOnDestroy() {
+    clearInterval(this.timer);
+    clearInterval(this.levelTimer);
+  }
 
   async generateBlinds() {
     const modal = await this.modalController.create({
@@ -52,33 +60,27 @@ export class TimerPage implements OnInit {
 
   startGame() {
     this.blindSchedule = [];
-    let currentBlind = this.startingBlind;
-    let currentTime = 0;
-    let levels = 10; // Or make this configurable
-
-    for (let i = 0; i < levels; i++) {
-      currentTime = this.levelDuration;
-      this.blindSchedule.push({ blind: currentBlind, time: currentTime });
-      currentBlind += this.blindIncrease;
+    let blind = this.startingBlind;
+    for (let i = 0; i < 10; i++) {
+      this.blindSchedule.push({ blind, time: this.levelDuration });
+      blind += this.blindIncrease;
     }
     this.gameStarted = true;
     this.currentLevel = 0;
     this.currentSmallBlind = this.startingBlind;
     this.currentBigBlind = this.startingBlind * 2;
-    this.timeLeft = this.levelDuration * 60; // convert minutes to seconds
+    this.timeLeft = this.levelDuration * 60;
     this.runTimer();
-    this.startLevelTimer(this.blindSchedule[this.currentLevel].time); // Only here!
+    this.startLevelTimer(this.levelDuration);
   }
 
   runTimer() {
     clearInterval(this.timer);
     this.timer = setInterval(() => {
-      if (!this.isPaused) {
-        if (this.timeLeft > 0) {
-          this.timeLeft--;
-        } else {
-          this.nextLevel();
-        }
+      if (!this.isPaused && this.timeLeft > 0) {
+        this.timeLeft--;
+      } else if (!this.isPaused) {
+        this.nextLevel();
       }
     }, 1000);
   }
@@ -89,35 +91,28 @@ export class TimerPage implements OnInit {
       this.currentSmallBlind += this.blindIncrease;
       this.currentBigBlind = this.currentSmallBlind * 2;
       this.timeLeft = this.levelDuration * 60;
+      this.advanceToNextLevel();
     } else {
       clearInterval(this.timer);
       this.gameStarted = false;
-      // Optionally show a message: Tournament complete!
-    }
-    this.advanceToNextLevel();
-  }
-
-  ngOnDestroy() {
-    if (this.timer) {
-      clearInterval(this.timer);
+      this.showToast('Tournament complete!', 5000);
     }
   }
 
   togglePause() {
+    this.isPaused = !this.isPaused;
     if (this.isPaused) {
-      this.isPaused = false;
-      // Only resume timers, do NOT reset elapsedTime
-      this.runTimer();
-      this.resumeLevelTimer(this.blindSchedule[this.currentLevel].time);
-    } else {
-      this.isPaused = true;
       clearInterval(this.timer);
       clearInterval(this.levelTimer);
+    } else {
+      this.runTimer();
+      this.resumeLevelTimer(this.levelDuration);
     }
   }
 
   restartGame() {
     clearInterval(this.timer);
+    clearInterval(this.levelTimer);
     this.isPaused = false;
     this.currentLevel = 0;
     this.currentSmallBlind = this.startingBlind;
@@ -125,6 +120,7 @@ export class TimerPage implements OnInit {
     this.timeLeft = this.levelDuration * 60;
     this.gameStarted = false;
     this.blindSchedule = [];
+    this.elapsedTime = 0;
   }
 
   get displayMinutes(): number {
@@ -141,12 +137,9 @@ export class TimerPage implements OnInit {
   }
 
   startLevelTimer(levelDuration: number) {
-    if (this.levelTimer) {
-      clearInterval(this.levelTimer);
-    }
+    clearInterval(this.levelTimer);
     this.elapsedTime = 0;
     this.toastShown = false;
-
     this.levelTimer = setInterval(() => {
       if (!this.isPaused) {
         if (!this.toastShown && this.elapsedTime === levelDuration * 60 - 5) {
@@ -164,33 +157,17 @@ export class TimerPage implements OnInit {
   }
 
   resumeLevelTimer(levelDuration: number) {
-    if (this.levelTimer) {
-      clearInterval(this.levelTimer);
-    }
-    this.levelTimer = setInterval(() => {
-      if (!this.isPaused) {
-        if (!this.toastShown && this.elapsedTime === levelDuration * 60 - 5) {
-          this.showToast('Only 5 seconds left in this level!', 5000, 'warning');
-          this.toastShown = true;
-        }
-        if (this.elapsedTime < levelDuration * 60) {
-          this.elapsedTime++;
-        } else {
-          clearInterval(this.levelTimer);
-          this.advanceToNextLevel();
-        }
-      }
-    }, 1000);
+    this.startLevelTimer(levelDuration);
   }
 
   advanceToNextLevel() {
-    if (this.currentLevel < this.blindSchedule.length - 1) {
+    if (this.currentLevel < this.blindSchedule.length) {
       this.showToast(
         `Level ${this.currentLevel + 1} started!`,
         5000,
         'primary'
       );
-      this.startLevelTimer(this.blindSchedule[this.currentLevel].time); // Only here!
+      this.startLevelTimer(this.levelDuration);
     } else {
       this.showToast('All levels complete!', 5000);
       this.elapsedTime = 0;
@@ -217,5 +194,42 @@ export class TimerPage implements OnInit {
 
   openSettingsMenu() {
     this.menuController.open('settingsMenu');
+  }
+
+  async openBlindSettings() {
+    const modal = await this.modalController.create({
+      component: BlindSettingsModalComponent,
+      cssClass: 'blind-settings-modal', // Optional: for custom styling
+      backdropDismiss: true,
+    });
+    await modal.present();
+  }
+
+  syncTime() {
+    // Sync Level
+    if (
+      this.manualLevel &&
+      this.manualLevel >= 1 &&
+      this.manualLevel <= this.blindSchedule.length
+    ) {
+      this.currentLevel = this.manualLevel - 1;
+      const levelData = this.blindSchedule[this.currentLevel];
+      this.currentSmallBlind = levelData.blind;
+      this.currentBigBlind = levelData.blind * 2;
+    }
+
+    // Sync Time
+    if (!this.manualTime) return;
+    const parts = this.manualTime.split(':');
+    let seconds = 0;
+    if (parts.length === 2) {
+      seconds = +parts[0] * 60 + +parts[1];
+    } else if (parts.length === 1) {
+      seconds = +parts[0];
+    }
+    if (seconds >= 0 && seconds <= this.levelDuration * 60) {
+      this.timeLeft = seconds;
+      this.elapsedTime = this.levelDuration * 60 - seconds;
+    }
   }
 }
