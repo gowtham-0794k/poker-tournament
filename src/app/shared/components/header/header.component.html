@@ -1,0 +1,13 @@
+<ion-toolbar color="primary">
+  <ion-title>{{ title }}</ion-title>
+
+  <ion-buttons slot="end">
+    <ion-button (click)="openSettings()" *ngIf="showSettings">
+      <ion-icon name="settings-outline"></ion-icon>
+    </ion-button>
+
+    <ion-button (click)="syncTournament()" *ngIf="showSync">
+      <ion-icon name="sync-outline"></ion-icon>
+    </ion-button>
+  </ion-buttons>
+</ion-toolbar>

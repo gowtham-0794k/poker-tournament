@@ -136,9 +136,9 @@ export class TimerPage implements OnInit, OnDestroy {
     return this.blindSchedule[this.currentLevel];
   }
 
-  startLevelTimer(levelDuration: number) {
+  startLevelTimer(levelDuration: number, startElapsed: number = 0) {
     clearInterval(this.levelTimer);
-    this.elapsedTime = 0;
+    this.elapsedTime = startElapsed;
     this.toastShown = false;
     this.levelTimer = setInterval(() => {
       if (!this.isPaused) {
@@ -157,7 +157,7 @@ export class TimerPage implements OnInit, OnDestroy {
   }
 
   resumeLevelTimer(levelDuration: number) {
-    this.startLevelTimer(levelDuration);
+    this.startLevelTimer(levelDuration, this.elapsedTime);
   }
 
   advanceToNextLevel() {

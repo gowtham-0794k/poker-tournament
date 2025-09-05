@@ -5,11 +5,11 @@ const routes: Routes = [
   {
     path: 'tabs',
     loadChildren: () =>
-      import('./tabs/tabs.module').then((m) => m.TabsPageModule),
+      import('./layout/layout-module').then((m) => m.LayoutModule),
   },
   {
     path: '',
-    redirectTo: 'tabs/timer',
+    redirectTo: 'tabs/home',
     pathMatch: 'full',
   },
 ];
