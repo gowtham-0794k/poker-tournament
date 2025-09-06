@@ -44,6 +44,6 @@ ion-title {
     color: var(--ion-card-title-color);
 }
 
-// ion-header, ion-toolbar {
-//   padding-top: env(safe-area-inset-top);
-// }
+ion-header {
+  padding-top: 48px;
+}

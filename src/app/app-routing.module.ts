@@ -9,7 +9,7 @@ const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'tabs/home',
+    redirectTo: '/tabs/tournament/timer',
     pathMatch: 'full',
   },
 ];

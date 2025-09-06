@@ -4,7 +4,7 @@ import { TournamentTimerComponent } from './pages/tournament-timer/tournament-ti
 
 const routes: Routes = [
   {
-    path: '',
+    path: 'timer',
     component: TournamentTimerComponent,
   },
   {
