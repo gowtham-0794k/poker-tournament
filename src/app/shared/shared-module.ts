@@ -4,11 +4,11 @@ import { HeaderComponent } from './components/header/header.component';
 import { IonicModule } from '@ionic/angular';
 import { BlindStructureComponent } from './components/blind-structure-component/blind-structure-component.component';
 import { FormsModule } from '@angular/forms';
-import { MenuComponent } from './components/menu/menu.component';
+import { SideBarComponent } from './components/side-bar/side-bar.component';
 
 @NgModule({
-  declarations: [HeaderComponent, BlindStructureComponent, MenuComponent],
+  declarations: [HeaderComponent, BlindStructureComponent, SideBarComponent],
   imports: [CommonModule, IonicModule, FormsModule],
-  exports: [HeaderComponent, BlindStructureComponent, MenuComponent],
+  exports: [HeaderComponent, BlindStructureComponent, SideBarComponent],
 })
 export class SharedModule {}

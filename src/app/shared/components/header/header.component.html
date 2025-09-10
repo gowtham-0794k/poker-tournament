@@ -1,13 +1,24 @@
-<ion-toolbar color="primary">
-  <ion-title>{{ title }}</ion-title>
-
-  <ion-buttons slot="end">
-    <ion-button (click)="openSettings()" *ngIf="showSettings">
-      <ion-icon name="settings-outline"></ion-icon>
-    </ion-button>
-
-    <ion-button (click)="syncTournament()" *ngIf="showSync">
-      <ion-icon name="sync-outline"></ion-icon>
-    </ion-button>
-  </ion-buttons>
-</ion-toolbar>
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <div class="user-info-container" aria-label="User Info">
+        <ion-avatar>
+          <img src="assets/user-avatar.jpg" alt="Poker player avatar" />
+        </ion-avatar>
+        <div class="user-text">
+          <div class="welcome">Welcome back,</div>
+          <div class="username">Gowtham</div>
+        </div>
+      </div>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button
+        type="button"
+        aria-label="Open settings menu"
+        (click)="openSettingsMenu()"
+      >
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>

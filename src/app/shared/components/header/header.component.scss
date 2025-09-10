@@ -1,1 +1,38 @@
+.user-info-container {
+  display: flex;
+  align-items: center;
+}
 
+.user-text {
+  display: flex;
+  flex-direction: column;
+  margin-left: 4px;
+  justify-content: center;
+}
+
+.welcome {
+  font-size: 13px;
+  color: var(--ion-text-color);
+  line-height: 1;
+}
+
+.username {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ion-text-color);
+  line-height: 1.2;
+}
+
+ion-toolbar ion-avatar {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  width: 40px;
+}
+
+ion-toolbar ion-avatar img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  display: block;
+}

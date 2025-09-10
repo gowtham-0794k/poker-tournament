@@ -1,28 +1,4 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <div class="user-info-container" aria-label="User Info">
-        <ion-avatar>
-          <img src="assets/user-avatar.jpg" alt="Poker player avatar" />
-        </ion-avatar>
-        <div class="user-text">
-          <div class="welcome">Welcome back,</div>
-          <div class="username">Gowtham</div>
-        </div>
-      </div>
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button
-        type="button"
-        aria-label="Open settings menu"
-        (click)="openSettingsMenu()"
-      >
-        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
+<app-header />
 <ion-content fullscreen>
   <main>
     <div class="scrollable-main-content">
@@ -217,4 +193,4 @@
   </main>
 </ion-content>
 
-<app-menu />
+<app-side-bar />

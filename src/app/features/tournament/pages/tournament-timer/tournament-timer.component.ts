@@ -19,15 +19,12 @@ import { BlindSettingsModalComponent } from 'src/app/shared/components/blind-set
 export class TournamentTimerComponent implements OnInit, OnDestroy {
   startingBlind = 100;
   blindIncrease = 100;
-  levelDuration = 15;
   blindSchedule: { blind: number; time: number }[] = [];
 
   gameStarted = false;
   currentLevel = 0;
   currentSmallBlind = 0;
   currentBigBlind = 0;
-  timeLeft = 0;
-  isPaused = false;
   elapsedTime = 0;
   toastShown = false;
 
@@ -36,18 +33,25 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
   readonly Math = Math;
   manualTime: string = '';
   manualLevel: number | null = null;
+  private startTimestamp: number = 0;
+  private pauseAccumulated: number = 0;
+  private pauseStarted: number = 0;
+  private animationFrameId: number | null = null;
+  public timeLeft: number = 0;
+  public isPaused: boolean = false;
+  public levelDuration: number = 15; // in minutes
 
   constructor(
     private modalController: ModalController,
-    private toastController: ToastController,
-    private menuController: MenuController
+    private toastController: ToastController
   ) {}
 
   ngOnInit() {}
 
   ngOnDestroy() {
-    clearInterval(this.timer);
-    clearInterval(this.levelTimer);
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
   }
 
   async generateBlinds() {
@@ -72,20 +76,33 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
     this.currentLevel = 0;
     this.currentSmallBlind = this.startingBlind;
     this.currentBigBlind = this.startingBlind * 2;
+    this.startTimestamp = performance.now();
+    this.pauseAccumulated = 0;
     this.timeLeft = this.levelDuration * 60;
+    this.isPaused = false;
     this.runTimer();
     this.startLevelTimer(this.levelDuration);
   }
 
   runTimer() {
-    clearInterval(this.timer);
-    this.timer = setInterval(() => {
-      if (!this.isPaused && this.timeLeft > 0) {
-        this.timeLeft--;
-      } else if (!this.isPaused) {
-        this.nextLevel();
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+    const tick = () => {
+      if (!this.isPaused) {
+        const now = performance.now();
+        const elapsed = Math.floor(
+          (now - this.startTimestamp - this.pauseAccumulated) / 1000
+        );
+        this.timeLeft = Math.max(this.levelDuration * 60 - elapsed, 0);
+        if (this.timeLeft === 0) {
+          this.nextLevel();
+          return;
+        }
       }
-    }, 1000);
+      this.animationFrameId = requestAnimationFrame(tick);
+    };
+    tick();
   }
 
   nextLevel() {
@@ -94,20 +111,29 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
       this.currentSmallBlind += this.blindIncrease;
       this.currentBigBlind = this.currentSmallBlind * 2;
       this.timeLeft = this.levelDuration * 60;
-      this.advanceToNextLevel();
+      this.elapsedTime = 0; // Reset elapsedTime for the new level
+      this.startTimestamp = performance.now();
+      this.runTimer();
+      this.startLevelTimer(this.levelDuration, 0); // Always start from 0
     } else {
-      clearInterval(this.timer);
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId);
+      }
       this.gameStarted = false;
       this.showToast('Tournament complete!', 5000);
     }
   }
 
   togglePause() {
-    this.isPaused = !this.isPaused;
-    if (this.isPaused) {
-      clearInterval(this.timer);
-      clearInterval(this.levelTimer);
+    if (!this.isPaused) {
+      this.isPaused = true;
+      this.pauseStarted = performance.now();
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId);
+      }
     } else {
+      this.isPaused = false;
+      this.pauseAccumulated += performance.now() - this.pauseStarted;
       this.runTimer();
       this.resumeLevelTimer(this.levelDuration);
     }
@@ -193,10 +219,6 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
       position: 'bottom',
     });
     await toast.present();
-  }
-
-  openSettingsMenu() {
-    this.menuController.open('settingsMenu');
   }
 
   async openBlindSettings() {

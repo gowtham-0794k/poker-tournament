@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { MenuController } from '@ionic/angular';
 
 @Component({
   selector: 'app-header',
@@ -11,11 +12,11 @@ export class HeaderComponent implements OnInit {
   public showSettings = true;
   public showSync = true;
 
-  constructor() {}
+  constructor(private menuController: MenuController) {}
 
   ngOnInit() {}
 
-  openSettings() {}
-
-  syncTournament() {}
+  openSettingsMenu() {
+    this.menuController.open('settingsMenu');
+  }
 }
