@@ -1,13 +1,10 @@
-// Content area
 .content-area {
-  padding-bottom: 380px; // Space for sticky card
+  padding-bottom: 420px; // Space for sticky card
   min-height: 50vh;
 }
 
-// Timer display
 .timer-display {
   text-align: center;
-  
   h1 {
     font-size: 3rem;
     font-family: monospace;
@@ -15,7 +12,6 @@
     margin: 16px 0;
     color: var(--ion-color-primary);
   }
-  
   ion-progress-bar {
     height: 8px;
     border-radius: 4px;
@@ -23,24 +19,21 @@
   }
 }
 
-// Blinds and Levels Grid
 .blinds-levels-grid {
   margin-top: 20px;
-  
-  .level-card, .blinds-card {
+  .level-card,
+  .blinds-card {
     background: var(--ion-color-light);
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     text-align: center;
-    
     .primary-value {
       font-size: 2.5rem;
       font-weight: 600;
       color: var(--ion-color-dark);
       margin: 0;
       line-height: 1.2;
-      
       .ante-value {
         font-size: 1.2rem;
         color: var(--ion-color-tertiary);
@@ -49,14 +42,6 @@
         margin-top: 4px;
       }
     }
-    
-    .secondary-text {
-      font-size: 1rem;
-      color: var(--ion-color-medium-shade);
-      margin: 8px 0;
-      font-weight: 400;
-    }
-    
     .card-label {
       font-size: 0.9rem;
       font-weight: 500;
@@ -67,7 +52,6 @@
   }
 }
 
-// Sticky bottom card
 .sticky-bottom {
   position: fixed;
   bottom: 0;
@@ -76,7 +60,6 @@
   z-index: 1000;
   background: var(--ion-background-color);
   border-top: 1px solid var(--ion-color-light-shade);
-  
   ion-card {
     margin: 0;
     border-radius: 16px 16px 0 0;
@@ -87,23 +70,20 @@
 // Responsive adjustments
 @media (max-width: 768px) {
   .content-area {
-    padding-bottom: 420px; // More space on mobile
+    padding-bottom: 500px;
   }
-  
   .timer-display h1 {
     font-size: 2.5rem;
   }
-  
   .blinds-levels-grid {
-    .level-card, .blinds-card {
+    .level-card,
+    .blinds-card {
       padding: 16px;
-      
       .primary-value {
         font-size: 2rem;
       }
     }
   }
-  
   .sticky-bottom ion-card {
     border-radius: 12px 12px 0 0;
   }
@@ -113,247 +93,13 @@
   .timer-display h1 {
     font-size: 2rem;
   }
-  
   .blinds-levels-grid {
-    .level-card, .blinds-card {
+    .level-card,
+    .blinds-card {
       padding: 12px;
-      
       .primary-value {
         font-size: 1.5rem;
       }
-      
-      .secondary-text {
-        font-size: 0.9rem;
-      }
     }
   }
-}
-
-// Levels Modal Styles
-.current-level-summary {
-  margin-bottom: 20px;
-  background: linear-gradient(135deg, var(--ion-color-primary-tint) 0%, var(--ion-color-light) 100%);
-  border: 2px solid var(--ion-color-primary);
-  
-  .summary-header {
-    h2 {
-      margin: 0 0 12px 0;
-      color: var(--ion-color-primary-shade);
-      font-weight: 700;
-    }
-    
-    ion-progress-bar {
-      height: 8px;
-      border-radius: 4px;
-    }
-  }
-  
-  .summary-details {
-    margin-top: 12px;
-    
-    .time-left {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--ion-color-dark);
-    }
-  }
-}
-
-.levels-container {
-  .level-card {
-    background: var(--ion-color-light);
-    border-radius: 12px;
-    margin-bottom: 12px;
-    border: 2px solid transparent;
-    overflow: hidden;
-    position: relative;
-    transition: all 0.3s ease;
-    
-    &.level-completed {
-      background: var(--ion-color-success-tint);
-      border-color: var(--ion-color-success);
-      opacity: 0.7;
-      transform: scale(0.95);
-    }
-    
-    &.level-current {
-      background: linear-gradient(135deg, var(--ion-color-warning-tint) 0%, var(--ion-color-light) 100%);
-      border-color: var(--ion-color-warning);
-      box-shadow: 0 4px 16px rgba(var(--ion-color-warning-rgb), 0.3);
-      transform: scale(1.02);
-    }
-    
-    &.level-upcoming {
-      background: var(--ion-color-light);
-      border-color: var(--ion-color-medium);
-    }
-  }
-  
-  .level-header {
-    display: flex;
-    align-items: center;
-    padding: 16px;
-    border-bottom: 1px solid var(--ion-color-light-shade);
-    
-    .level-number {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: var(--ion-color-medium);
-      color: white;
-      font-weight: 700;
-      margin-right: 16px;
-      position: relative;
-      
-      .completed-icon, .current-icon {
-        position: absolute;
-        font-size: 1.5rem;
-        background: var(--ion-color-light);
-        border-radius: 50%;
-      }
-      
-      .completed-icon {
-        color: var(--ion-color-success);
-      }
-      
-      .current-icon {
-        color: var(--ion-color-warning);
-        animation: pulse 2s infinite;
-      }
-    }
-    
-    .level-current .level-number {
-      background: var(--ion-color-warning);
-    }
-    
-    .level-completed .level-number {
-      background: var(--ion-color-success);
-    }
-    
-    .level-info {
-      flex: 1;
-      
-      h3 {
-        margin: 0 0 4px 0;
-        color: var(--ion-color-dark);
-        font-weight: 600;
-      }
-      
-      p {
-        margin: 0;
-        color: var(--ion-color-medium-shade);
-        font-size: 0.9rem;
-      }
-    }
-    
-    .level-status {
-      .status-badge {
-        padding: 6px 12px;
-        border-radius: 16px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        
-        &.completed {
-          background: var(--ion-color-success-tint);
-          color: var(--ion-color-success-shade);
-        }
-        
-        &.current {
-          background: var(--ion-color-warning-tint);
-          color: var(--ion-color-warning-shade);
-        }
-        
-        &.upcoming {
-          background: var(--ion-color-medium-tint);
-          color: var(--ion-color-medium-shade);
-        }
-      }
-    }
-  }
-  
-  .level-details {
-    padding: 16px;
-    
-    .blinds-info {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
-      
-      .blind-item {
-        text-align: center;
-        
-        &.ante {
-          grid-column: span 3;
-          padding-top: 8px;
-          border-top: 1px solid var(--ion-color-light-shade);
-        }
-        
-        .blind-label {
-          display: block;
-          font-size: 0.8rem;
-          color: var(--ion-color-medium-shade);
-          margin-bottom: 4px;
-          font-weight: 500;
-        }
-        
-        .blind-value {
-          display: block;
-          font-size: 1.2rem;
-          font-weight: 600;
-          color: var(--ion-color-dark);
-        }
-      }
-    }
-    
-    .current-progress {
-      ion-progress-bar {
-        height: 6px;
-        border-radius: 3px;
-        margin-bottom: 8px;
-      }
-      
-      .progress-text {
-        text-align: center;
-        font-size: 0.8rem;
-        color: var(--ion-color-medium-shade);
-        font-family: monospace;
-      }
-    }
-  }
-  
-  .completed-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(var(--ion-color-success-rgb), 0.9);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    
-    .large-check {
-      font-size: 3rem;
-      margin-bottom: 8px;
-    }
-    
-    .completed-text {
-      font-weight: 600;
-      font-size: 1.1rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-  }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
 }

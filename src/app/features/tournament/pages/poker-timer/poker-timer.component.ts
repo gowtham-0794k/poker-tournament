@@ -1,6 +1,6 @@
-import { Component, computed, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ModalController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { SharedModule } from 'src/app/shared/shared-module';
 import {
@@ -8,6 +8,8 @@ import {
   TimerState,
   TournamentTimerService,
 } from '../../service/tournament';
+import { LevelSchedulesComponent } from 'src/app/shared/components/level-schedules/level-schedules.component';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 @Component({
   selector: 'app-poker-timer',
@@ -18,6 +20,7 @@ import {
 export class PokerTimerComponent implements OnInit, OnDestroy {
   // Form inputs
   smallBlind: number = 50;
+  blindsIncrement: number = 50;
   duration: number = 10;
   levels: number = 10;
 
@@ -25,6 +28,8 @@ export class PokerTimerComponent implements OnInit, OnDestroy {
   syncLevel: number = 1;
   syncTime: string = '';
   anteEnabled: boolean = false;
+  stackSize: number | null = null;
+  bigBlindsLeft = 0;
 
   // Timer state from service
   timerState: TimerState = {
@@ -32,6 +37,8 @@ export class PokerTimerComponent implements OnInit, OnDestroy {
     isPaused: false,
     currentLevel: 1,
     currentSmallBlind: 50,
+    initialSmallBlind: 50,
+    currentBlindsIncrement: 50,
     currentBigBlind: 100,
     timeRemainingMs: 600000,
     totalLevels: 10,
@@ -40,7 +47,10 @@ export class PokerTimerComponent implements OnInit, OnDestroy {
 
   private timerSubscription?: Subscription;
 
-  constructor(private tournamentTimerService: TournamentTimerService) {}
+  constructor(
+    private tournamentTimerService: TournamentTimerService,
+    private modalController: ModalController
+  ) {}
 
   ngOnInit() {
     // Subscribe to timer state changes
@@ -70,6 +80,7 @@ export class PokerTimerComponent implements OnInit, OnDestroy {
       // Configure with current form values before starting
       const config: TimerConfig = {
         initialSmallBlind: this.smallBlind,
+        initialBlindsIncrement: this.blindsIncrement,
         durationMinutes: this.duration,
         totalLevels: this.levels,
         anteEnabled: this.anteEnabled,
@@ -157,6 +168,36 @@ export class PokerTimerComponent implements OnInit, OnDestroy {
       });
     }
     return levels;
+  }
+
+  async openLevelSchedulesModal() {
+    const modal = await this.modalController.create({
+      component: LevelSchedulesComponent,
+      cssClass: 'level-schedules-modal',
+      backdropDismiss: true,
+    });
+    await modal.present();
+  }
+
+  toggleAnte() {
+    this.tournamentTimerService.anteToggle(this.anteEnabled);
+  }
+
+  calculateBigBlindsLeft() {
+    if (!this.stackSize || !this.timerState.currentBigBlind) {
+      return;
+    }
+    if (this.anteEnabled) {
+      // With ante: Stack / (big blind * 2)
+      this.bigBlindsLeft = Math.floor(
+        this.stackSize / (this.timerState.currentBigBlind * 2)
+      );
+    } else {
+      // Without ante: Stack / big blind
+      this.bigBlindsLeft = Math.floor(
+        this.stackSize / this.timerState.currentBigBlind
+      );
+    }
   }
 
   // Helper for template

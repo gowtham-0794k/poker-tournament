@@ -1,4 +1,4 @@
-<ion-header translucent>
+<ion-header>
   <ion-toolbar>
     <ion-title>Tournament Timeline</ion-title>
     <ion-buttons slot="end">
@@ -9,170 +9,118 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen>
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tournament Timeline</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
+<ion-content fullscreen class="ion-padding-top">
   <div class="timeline-container">
-    <ion-list lines="none">
-      @for (levelData of levels; track levelData.level; let i = $index) {
-      <div
-        class="timeline-item"
+    <ion-list lines="none" class="timeline-list">
+      @for (levelData of levels; track levelData.level) {
+      <ion-card
+        class="level-card"
         [ngClass]="{
-          completed: levelData.isCompleted,
-          active: levelData.isActive,
-          upcoming: !levelData.isCompleted && !levelData.isActive
+          'completed-card': levelData.isCompleted,
+          'active-card': levelData.isActive,
+          'upcoming-card': !levelData.isCompleted && !levelData.isActive
         }"
       >
-        <!-- Timeline connector line -->
-        @if (i < levels.length - 1) {
-        <div class="timeline-line"></div>
-        }
-
-        <!-- Timeline dot -->
-        <div class="timeline-dot">
-          @if (levelData.isCompleted) {
-          <ion-icon name="checkmark-circle" class="completed-icon"></ion-icon>
-          } @if (levelData.isActive) {
-          <ion-icon name="play-circle" class="active-icon"></ion-icon>
-          } @if (!levelData.isCompleted && !levelData.isActive) {
-          <ion-avatar class="level-avatar">
-            <div class="level-number">{{ levelData.level }}</div>
+        @if (levelData.isCompleted) {
+        <ion-item lines="none" class="completed-item">
+          <ion-avatar slot="start" class="completed-avatar">
+            <ion-icon name="checkmark-circle"></ion-icon>
           </ion-avatar>
-          }
-        </div>
-
-        <!-- Level card -->
-        <ion-card
-          class="level-card"
-          [ngClass]="{
-            'completed-card': levelData.isCompleted,
-            'active-card': levelData.isActive,
-            'upcoming-card': !levelData.isCompleted && !levelData.isActive
-          }"
-        >
-          <!-- Completed level - collapsed view -->
-          @if (levelData.isCompleted) {
-          <ion-item lines="none" class="completed-item">
-            <ion-avatar slot="start" class="completed-avatar">
-              <ion-icon name="checkmark-circle"></ion-icon>
+          <ion-label>
+            <strong>Level {{ levelData.level }}</strong>
+            <p>Completed</p>
+          </ion-label>
+          <ion-chip slot="end" color="success" outline>
+            <ion-label>Done</ion-label>
+          </ion-chip>
+        </ion-item>
+        } @if (!levelData.isCompleted) {
+        <ion-card-content>
+          <div class="level-header">
+            @if (levelData.isActive) {
+            <ion-chip color="primary">
+              <ion-label>Current</ion-label>
+            </ion-chip>
+            } @if (!levelData.isActive) {
+            <ion-chip color="medium" outline>
+              <ion-label>Upcoming</ion-label>
+            </ion-chip>
+            }
+          </div>
+          <ion-item lines="none" class="level-title-item">
+            <ion-avatar
+              slot="start"
+              [class]="levelData.isActive ? 'active-avatar' : 'upcoming-avatar'"
+            >
+              <div class="level-number">{{ levelData.level }}</div>
             </ion-avatar>
             <ion-label>
-              <h2>
-                <strong>Level {{ levelData.level }}</strong>
-              </h2>
-              <p>Completed</p>
+              <h1>Level {{ levelData.level }}</h1>
             </ion-label>
-            <ion-chip slot="end" color="success" outline>
-              <ion-icon name="checkmark"></ion-icon>
-              <ion-label>Done</ion-label>
-            </ion-chip>
           </ion-item>
-          }
-
-          <!-- Active/Upcoming level - expanded view -->
-          @if (!levelData.isCompleted) {
-          <ion-card-content>
-            <div class="level-header">
-              @if (levelData.isActive) {
-              <ion-chip color="primary" class="active-chip">
-                <ion-icon name="radio-button-on"></ion-icon>
-                <ion-label>Current Level</ion-label>
-              </ion-chip>
-              } @if (!levelData.isActive) {
-              <ion-chip color="medium" outline>
-                <ion-icon name="time"></ion-icon>
-                <ion-label>Upcoming</ion-label>
-              </ion-chip>
-              }
-            </div>
-
-            <ion-item lines="none" class="level-title-item">
-              <ion-avatar
+          <ion-list class="blinds-list">
+            <ion-item lines="full">
+              <ion-icon
+                name="trending-up"
                 slot="start"
-                [class]="
-                  levelData.isActive ? 'active-avatar' : 'upcoming-avatar'
-                "
-              >
-                <div class="level-number">{{ levelData.level }}</div>
-              </ion-avatar>
+                color="primary"
+              ></ion-icon>
               <ion-label>
-                <h1>Level {{ levelData.level }}</h1>
+                <h3>Small Blind</h3>
+                <p class="blind-amount">
+                  {{ formatBlind(levelData.smallBlind) }}
+                </p>
               </ion-label>
+              <ion-chip slot="end" color="primary" outline>
+                <ion-label>SB</ion-label>
+              </ion-chip>
             </ion-item>
-
-            <ion-list class="blinds-list">
-              <ion-item lines="full">
-                <ion-icon
-                  name="trending-up"
-                  slot="start"
-                  color="primary"
-                ></ion-icon>
-                <ion-label>
-                  <h3>Small Blind</h3>
-                  <p class="blind-amount">
-                    {{ formatBlind(levelData.smallBlind) }}
-                  </p>
-                </ion-label>
-                <ion-chip slot="end" color="primary" outline>
-                  <ion-label>SB</ion-label>
-                </ion-chip>
-              </ion-item>
-
-              <ion-item lines="full">
-                <ion-icon
-                  name="trending-up"
-                  slot="start"
-                  color="warning"
-                ></ion-icon>
-                <ion-label>
-                  <h3>Big Blind</h3>
-                  <p class="blind-amount">
-                    {{ formatBlind(levelData.bigBlind) }}
-                  </p>
-                </ion-label>
-                <ion-chip slot="end" color="warning" outline>
-                  <ion-label>BB</ion-label>
-                </ion-chip>
-              </ion-item>
-
-              @if (anteEnabled && levelData.ante > 0) {
-              <ion-item lines="none">
-                <ion-icon
-                  name="add-circle"
-                  slot="start"
-                  color="tertiary"
-                ></ion-icon>
-                <ion-label>
-                  <h3>Ante</h3>
-                  <p class="blind-amount">{{ formatBlind(levelData.ante) }}</p>
-                </ion-label>
-                <ion-chip slot="end" color="tertiary" outline>
-                  <ion-label>ANTE</ion-label>
-                </ion-chip>
-              </ion-item>
-              }
-            </ion-list>
-
-            @if (!levelData.isCompleted) {
-            <ion-item lines="none" class="duration-item">
-              <ion-icon name="timer" slot="start" color="medium"></ion-icon>
+            <ion-item lines="full">
+              <ion-icon
+                name="trending-up"
+                slot="start"
+                color="warning"
+              ></ion-icon>
               <ion-label>
-                <h3>Duration</h3>
-                <p>{{ durationMinutes }} minutes per level</p>
+                <h3>Big Blind</h3>
+                <p class="blind-amount">
+                  {{ formatBlind(levelData.bigBlind) }}
+                </p>
               </ion-label>
-              <ion-badge slot="end" color="medium">
-                {{ durationMinutes }}min
-              </ion-badge>
+              <ion-chip slot="end" color="warning" outline>
+                <ion-label>BB</ion-label>
+              </ion-chip>
+            </ion-item>
+            @if (anteEnabled && levelData.ante > 0) {
+            <ion-item lines="full">
+              <ion-icon
+                name="add-circle"
+                slot="start"
+                color="warning"
+              ></ion-icon>
+              <ion-label>
+                <h3>Ante</h3>
+                <p class="blind-amount">{{ formatBlind(levelData.ante) }}</p>
+              </ion-label>
+              <ion-chip slot="end" color="warning" outline>
+                <ion-label>ANTE</ion-label>
+              </ion-chip>
             </ion-item>
             }
-          </ion-card-content>
-          }
-        </ion-card>
-      </div>
+          </ion-list>
+          <ion-item lines="none" class="duration-item">
+            <ion-icon name="timer" slot="start" color="medium"></ion-icon>
+            <ion-label>
+              <h3>Duration</h3>
+              <p>{{ durationMinutes }} minutes per level</p>
+            </ion-label>
+            <ion-badge slot="end" color="medium">
+              {{ durationMinutes }}min
+            </ion-badge>
+          </ion-item>
+        </ion-card-content>
+        }
+      </ion-card>
       }
     </ion-list>
   </div>

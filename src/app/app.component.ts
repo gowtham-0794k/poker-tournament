@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { TournamentTimerService } from './features/tournament/service/tournament';
 
 @Component({
   selector: 'app-root',
@@ -7,8 +9,12 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class AppComponent {
-  constructor() {
+  constructor(private tournamentTimerService: TournamentTimerService) {
     this.setInitialTheme();
+  }
+
+  async ngOnInit() {
+    await this.tournamentTimerService.ensureNotificationPermission();
   }
 
   setInitialTheme() {

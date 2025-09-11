@@ -76,6 +76,18 @@
               </ion-col>
               <ion-col size="6">
                 <ion-item>
+                  <ion-label position="floating">Blinds Increment</ion-label>
+                  <ion-input
+                    type="number"
+                    [(ngModel)]="blindsIncrement"
+                    placeholder="Enter blinds increment"
+                    [disabled]="!canModifySettings()"
+                  >
+                  </ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item>
                   <ion-label position="floating">Duration (minutes)</ion-label>
                   <ion-input
                     type="number"
@@ -102,8 +114,12 @@
               </ion-col>
               <ion-col size="6">
                 <ion-item>
-                  <ion-toggle [(ngModel)]="anteEnabled" slot="start"
-                    >Ante
+                  <ion-toggle
+                    [(ngModel)]="anteEnabled"
+                    slot="start"
+                    (ionChange)="toggleAnte()"
+                  >
+                    Ante
                   </ion-toggle>
                 </ion-item>
               </ion-col>
@@ -111,7 +127,7 @@
           </ion-grid>
 
           <!-- Sync Controls -->
-          <ion-grid class="ion-no-padding ion-margin-top">
+          <ion-grid class="ion-no-padding">
             <ion-row>
               <ion-col size="4">
                 <ion-item fill="outline" class="sync-input">
@@ -150,56 +166,77 @@
               </ion-col>
             </ion-row>
           </ion-grid>
-        </ion-list>
-
-        <!-- Action Buttons -->
-        <div class="ion-margin-top">
-          <ion-grid>
+          <ion-grid class="ion-no-padding">
             <ion-row>
-              <ion-col size="4">
-                <ion-button
-                  expand="block"
-                  color="success"
-                  (click)="startTimer()"
-                  [disabled]="
-                    !isValidInput() ||
-                    (timerState.isRunning && !timerState.isPaused)
-                  "
-                >
-                  <ion-icon name="play" slot="start"></ion-icon>
-                  {{
-                    !timerState.isRunning && !timerState.isPaused
-                      ? "Start"
-                      : "Resume"
-                  }}
-                </ion-button>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="stacked">Your Stack</ion-label>
+                  <ion-input
+                    type="number"
+                    [(ngModel)]="stackSize"
+                    placeholder="Enter stack size"
+                  >
+                  </ion-input>
+                </ion-item>
               </ion-col>
-
-              <ion-col size="4">
+              <ion-col size="6" class="ion-align-self-center">
                 <ion-button
                   expand="block"
                   color="warning"
-                  (click)="pauseTimer()"
-                  [disabled]="!timerState.isRunning"
+                  (click)="calculateBigBlindsLeft()"
                 >
-                  <ion-icon name="pause" slot="start"></ion-icon>
-                  Pause
-                </ion-button>
-              </ion-col>
-
-              <ion-col size="4">
-                <ion-button
-                  expand="block"
-                  color="danger"
-                  (click)="resetTimer()"
-                >
-                  <ion-icon name="refresh" slot="start"></ion-icon>
-                  Reset
+                  <ion-icon name="logo-stackoverflow" slot="start"></ion-icon>
+                  BB Left - {{ bigBlindsLeft }} BB
                 </ion-button>
               </ion-col>
             </ion-row>
           </ion-grid>
-        </div>
+        </ion-list>
+
+        <!-- Action Buttons -->
+        <ion-grid>
+          <ion-row>
+            <ion-col size="3">
+              <ion-button
+                expand="block"
+                color="success"
+                (click)="startTimer()"
+                [disabled]="
+                  !isValidInput() ||
+                  (timerState.isRunning && !timerState.isPaused)
+                "
+              >
+                <ion-icon name="play" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-col>
+
+            <ion-col size="3">
+              <ion-button
+                expand="block"
+                color="warning"
+                (click)="pauseTimer()"
+                [disabled]="!timerState.isRunning"
+              >
+                <ion-icon name="pause" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-col>
+
+            <ion-col size="3">
+              <ion-button expand="block" color="danger" (click)="resetTimer()">
+                <ion-icon name="refresh" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-col>
+            <ion-col size="3">
+              <ion-button
+                expand="block"
+                color="secondary"
+                (click)="openLevelSchedulesModal()"
+              >
+                <ion-icon name="layers-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </ion-card-content>
     </ion-card>
   </div>

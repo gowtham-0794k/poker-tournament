@@ -36,14 +36,20 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
 
-ion-card-title, .ion-card-title {
+ion-card-title,
+.ion-card-title {
   color: var(--ion-card-title-color);
 }
 
 ion-title {
-    color: var(--ion-card-title-color);
+  color: var(--ion-card-title-color);
 }
 
 ion-header {
   padding-top: 48px;
+}
+
+ion-header {
+  --background: rgba(255, 255, 255, 0.8); /* semi-transparent white */
+  backdrop-filter: blur(10px); /* adds a blur effect */
 }

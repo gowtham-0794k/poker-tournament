@@ -7,7 +7,7 @@ import { Component, OnInit } from '@angular/core';
   standalone: false,
 })
 export class SideBarComponent implements OnInit {
-  darkMode = false;
+  darkMode = true;
 
   constructor() {}
 

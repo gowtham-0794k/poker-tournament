@@ -1,242 +1,105 @@
-ion-content {
-      --background: var(--ion-color-light);
-    }
+.timeline-container {
+  padding: 8px 0;
+  max-width: 480px;
+  margin: 0 auto;
+}
 
-    .timeline-container {
-      padding: 16px;
-      position: relative;
-    }
+.timeline-list {
+  background: transparent !important;
+}
 
-    .timeline-item {
-      position: relative;
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 24px;
-    }
+.level-card {
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 4px;
+  transition: box-shadow 0.2s;
+}
 
-    .timeline-line {
-      position: absolute;
-      left: 28px;
-      top: 56px;
-      width: 3px;
-      height: calc(100% + 24px);
-      background: var(--ion-color-step-200);
-      border-radius: 2px;
-      z-index: 0;
-    }
+.completed-card {
+  border: 1px solid var(--ion-color-success);
+}
 
-    .timeline-item.completed .timeline-line {
-      background: var(--ion-color-success);
-    }
+.active-card {
+  border: 2px solid var(--ion-color-primary);
+}
 
-    .timeline-item.active .timeline-line {
-      background: var(--ion-color-primary);
-    }
+.upcoming-card {
+  border: 1px solid var(--ion-color-warning);
+}
 
-    .timeline-dot {
-      width: 56px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 16px;
-      z-index: 1;
-      flex-shrink: 0;
-      position: relative;
-    }
+.completed-item,
+.level-title-item,
+.duration-item {
+  --background: transparent;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-size: 0.95em;
+}
 
-    .completed-icon,
-    .active-icon {
-      font-size: 56px;
-    }
+.level-title-item h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
 
-    .completed-icon {
-      color: var(--ion-color-success);
-    }
+.active-avatar,
+.upcoming-avatar,
+.completed-avatar {
+  --size: 28px;
+  border-radius: 50%;
+  background: var(--ion-color-step-100);
+  color: var(--ion-color-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    .active-icon {
-      color: var(--ion-color-primary);
-      animation: pulse 2s infinite;
-    }
+.active-avatar {
+  background: var(--ion-color-primary);
+  color: #fff;
+}
 
-    @keyframes pulse {
-      0% { 
-        transform: scale(1);
-        opacity: 1;
-      }
-      50% { 
-        transform: scale(1.1);
-        opacity: 0.8;
-      }
-      100% { 
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
+.completed-avatar {
+  background: var(--ion-color-success);
+  color: #fff;
+}
 
-    .level-avatar {
-      --size: 56px;
-      --border-radius: 50%;
-      background: var(--ion-color-step-100);
-      border: 3px solid var(--ion-color-step-200);
-    }
+.blinds-list ion-item {
+  --background: var(--ion-color-step-50);
+  min-height: 32px;
+  font-size: 0.95em;
+}
 
-    .level-number {
-      font-size: 18px;
-      font-weight: bold;
-      color: var(--ion-color-dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-    }
+.blind-amount {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
 
-    .level-card {
-      flex: 1;
-      margin: 0;
-      transition: all 0.3s ease;
-      border-radius: 16px;
-    }
+ion-chip {
+  font-size: 0.8em;
+  font-weight: 500;
+}
 
-    .completed-card {
-      border: 2px solid var(--ion-color-success);
-      background: var(--ion-color-success-tint);
-    }
+ion-badge {
+  font-size: 0.8em;
+  font-weight: 500;
+}
 
-    .active-card {
-      border: 2px solid var(--ion-color-primary);
-      background: var(--ion-color-primary-tint);
-      box-shadow: 0 8px 24px rgba(var(--ion-color-primary-rgb), 0.2);
-    }
+.level-header {
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: flex-end;
+}
 
-    .upcoming-card {
-      border: 1px solid var(--ion-color-step-200);
-      background: var(--ion-background);
-    }
-
-    .completed-item {
-      --background: transparent;
-      --padding-start: 16px;
-      --padding-end: 16px;
-      --inner-padding-end: 8px;
-    }
-
-    .completed-avatar {
-      --size: 40px;
-      background: var(--ion-color-success);
-      color: white;
-    }
-
-    .completed-avatar ion-icon {
-      font-size: 24px;
-    }
-
-    .level-header {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 8px;
-    }
-
-    .active-chip {
-      animation: chipPulse 2s infinite;
-    }
-
-    @keyframes chipPulse {
-      0%, 100% { 
-        transform: scale(1);
-      }
-      50% { 
-        transform: scale(1.05);
-      }
-    }
-
-    .level-title-item {
-      --background: transparent;
-      --padding-start: 0;
-      --padding-end: 0;
-      margin-bottom: 16px;
-    }
-
-    .level-title-item h1 {
-      font-size: 28px;
-      font-weight: 700;
-      margin: 0;
-      color: var(--ion-color-dark);
-    }
-
-    .active-avatar {
-      --size: 48px;
-      background: var(--ion-color-primary);
-      color: white;
-      animation: avatarPulse 2s infinite;
-    }
-
-    .upcoming-avatar {
-      --size: 48px;
-      background: var(--ion-color-step-100);
-      border: 2px solid var(--ion-color-step-200);
-    }
-
-    @keyframes avatarPulse {
-      0%, 100% { 
-        box-shadow: 0 0 0 0 rgba(var(--ion-color-primary-rgb), 0.7);
-      }
-      50% { 
-        box-shadow: 0 0 0 8px rgba(var(--ion-color-primary-rgb), 0);
-      }
-    }
-
-    .blinds-list {
-      margin: 16px 0;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .blinds-list ion-item {
-      --background: var(--ion-color-step-50);
-      --border-color: var(--ion-color-step-150);
-    }
-
-    .blind-amount {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--ion-color-dark);
-      margin: 4px 0 0 0;
-    }
-
-    .duration-item {
-      --background: var(--ion-color-step-50);
-      border-radius: 12px;
-      margin-top: 16px;
-    }
-
-    ion-chip {
-      font-weight: 600;
-    }
-
-    ion-badge {
-      font-weight: 600;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .timeline-container {
-        padding: 12px;
-      }
-      
-      .timeline-dot {
-        width: 48px;
-        height: 48px;
-        margin-right: 12px;
-      }
-      
-      .completed-icon,
-      .active-icon {
-        font-size: 48px;
-      }
-      
-      .level-avatar {
-        --size: 48px;
-      }
-    }
+@media (max-width: 480px) {
+  .timeline-container {
+    padding: 4px 0;
+  }
+  .level-card {
+    border-radius: 7px;
+  }
+  .level-title-item h1 {
+    font-size: 1rem;
+  }
+}
