@@ -338,20 +338,9 @@ export class TournamentTimerService {
 
   // Private: Handle tournament completion
   private tournamentComplete(): void {
-    this.stopTimerLoop();
-
-    const currentState = this.getCurrentState();
-    const newState: TimerState = {
-      ...currentState,
-      isRunning: false,
-      isPaused: false,
-      timeRemainingMs: 0,
-    };
-
-    this.timerStateSubject.next(newState);
-
     // Show tournament completion toast
     this.showToast('🏆 Tournament Complete! Congratulations! 🏆', 'success');
+    this.reset();
   }
 
   // Get progress percentage (0-100)
