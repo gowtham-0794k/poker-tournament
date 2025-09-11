@@ -49,8 +49,22 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
   ngOnInit() {}
 
   ngOnDestroy() {
+    // Clean up all timers and animation frames
+    this.cleanupTimers();
+  }
+
+  private cleanupTimers() {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+    if (this.levelTimer) {
+      clearInterval(this.levelTimer);
+      this.levelTimer = null;
     }
   }
 
@@ -66,6 +80,9 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
   }
 
   startGame() {
+    // Clean up any existing timers first
+    this.cleanupTimers();
+
     this.blindSchedule = [];
     let blind = this.startingBlind;
     for (let i = 0; i < 10; i++) {
@@ -80,8 +97,9 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
     this.pauseAccumulated = 0;
     this.timeLeft = this.levelDuration * 60;
     this.isPaused = false;
+    this.elapsedTime = 0;
+    this.toastShown = false;
     this.runTimer();
-    this.startLevelTimer(this.levelDuration);
   }
 
   runTimer() {
@@ -89,12 +107,26 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
       cancelAnimationFrame(this.animationFrameId);
     }
     const tick = () => {
-      if (!this.isPaused) {
+      if (!this.isPaused && this.gameStarted) {
         const now = performance.now();
-        const elapsed = Math.floor(
+        const totalElapsed = Math.floor(
           (now - this.startTimestamp - this.pauseAccumulated) / 1000
         );
-        this.timeLeft = Math.max(this.levelDuration * 60 - elapsed, 0);
+
+        // Calculate current level elapsed time
+        const currentLevelElapsed = totalElapsed % (this.levelDuration * 60);
+        this.elapsedTime = currentLevelElapsed;
+        this.timeLeft = Math.max(
+          this.levelDuration * 60 - currentLevelElapsed,
+          0
+        );
+
+        // Show warning toast 5 seconds before level ends
+        if (!this.toastShown && this.timeLeft <= 5 && this.timeLeft > 0) {
+          this.showToast('Only 5 seconds left in this level!', 3000, 'warning');
+          this.toastShown = true;
+        }
+
         if (this.timeLeft === 0) {
           this.nextLevel();
           return;
@@ -108,40 +140,53 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
   nextLevel() {
     this.currentLevel++;
     if (this.currentLevel < this.blindSchedule.length) {
-      this.currentSmallBlind += this.blindIncrease;
-      this.currentBigBlind = this.currentSmallBlind * 2;
+      const levelData = this.blindSchedule[this.currentLevel];
+      this.currentSmallBlind = levelData.blind;
+      this.currentBigBlind = levelData.blind * 2;
+
+      // Reset for new level
       this.timeLeft = this.levelDuration * 60;
-      this.elapsedTime = 0; // Reset elapsedTime for the new level
+      this.elapsedTime = 0;
+      this.toastShown = false;
       this.startTimestamp = performance.now();
+      this.pauseAccumulated = 0;
+
+      this.showToast(
+        `Level ${this.currentLevel + 1} started! Blinds: ${
+          this.currentSmallBlind
+        }/${this.currentBigBlind}`,
+        3000,
+        'success'
+      );
+
       this.runTimer();
-      this.startLevelTimer(this.levelDuration, 0); // Always start from 0
     } else {
-      if (this.animationFrameId !== null) {
-        cancelAnimationFrame(this.animationFrameId);
-      }
+      // Tournament complete
+      this.cleanupTimers();
       this.gameStarted = false;
-      this.showToast('Tournament complete!', 5000);
+      this.showToast('Tournament complete!', 5000, 'success');
     }
   }
 
   togglePause() {
+    if (!this.gameStarted) return;
+
     if (!this.isPaused) {
       this.isPaused = true;
       this.pauseStarted = performance.now();
       if (this.animationFrameId !== null) {
         cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
       }
     } else {
       this.isPaused = false;
       this.pauseAccumulated += performance.now() - this.pauseStarted;
       this.runTimer();
-      this.resumeLevelTimer(this.levelDuration);
     }
   }
 
   restartGame() {
-    clearInterval(this.timer);
-    clearInterval(this.levelTimer);
+    this.cleanupTimers();
     this.isPaused = false;
     this.currentLevel = 0;
     this.currentSmallBlind = this.startingBlind;
@@ -150,6 +195,10 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
     this.gameStarted = false;
     this.blindSchedule = [];
     this.elapsedTime = 0;
+    this.toastShown = false;
+    this.startTimestamp = 0;
+    this.pauseAccumulated = 0;
+    this.pauseStarted = 0;
   }
 
   get displayMinutes(): number {
@@ -165,46 +214,25 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
     return this.blindSchedule[this.currentLevel];
   }
 
+  // Remove redundant timer methods - using only runTimer() now
   startLevelTimer(levelDuration: number, startElapsed: number = 0) {
-    clearInterval(this.levelTimer);
-    this.elapsedTime = startElapsed;
-    this.toastShown = false;
-    this.levelTimer = setInterval(() => {
-      if (!this.isPaused) {
-        if (!this.toastShown && this.elapsedTime === levelDuration * 60 - 5) {
-          this.showToast('Only 5 seconds left in this level!', 5000, 'warning');
-          this.toastShown = true;
-        }
-        if (this.elapsedTime < levelDuration * 60) {
-          this.elapsedTime++;
-        } else {
-          clearInterval(this.levelTimer);
-          this.advanceToNextLevel();
-        }
-      }
-    }, 1000);
+    // This method is no longer needed as we use runTimer()
+    // Kept for compatibility but doesn't do anything
   }
 
   resumeLevelTimer(levelDuration: number) {
-    this.startLevelTimer(levelDuration, this.elapsedTime);
+    // This method is no longer needed as we use runTimer()
+    // Kept for compatibility but doesn't do anything
   }
 
   advanceToNextLevel() {
-    if (this.currentLevel < this.blindSchedule.length) {
-      this.showToast(
-        `Level ${this.currentLevel + 1} started!`,
-        5000,
-        'primary'
-      );
-      this.startLevelTimer(this.levelDuration);
-    } else {
-      this.showToast('All levels complete!', 5000);
-      this.elapsedTime = 0;
-    }
+    // This method is redundant with nextLevel()
+    this.nextLevel();
   }
 
-  getProgressPercent(levelDuration: number): number {
-    return (this.elapsedTime / (levelDuration * 60)) * 100;
+  getProgressPercent(): number {
+    if (this.levelDuration === 0) return 0;
+    return (this.elapsedTime / (this.levelDuration * 60)) * 100;
   }
 
   async showToast(
@@ -224,13 +252,15 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
   async openBlindSettings() {
     const modal = await this.modalController.create({
       component: BlindSettingsModalComponent,
-      cssClass: 'blind-settings-modal', // Optional: for custom styling
+      cssClass: 'blind-settings-modal',
       backdropDismiss: true,
     });
     await modal.present();
   }
 
   syncTime() {
+    if (!this.gameStarted) return;
+
     // Sync Level
     if (
       this.manualLevel &&
@@ -245,16 +275,31 @@ export class TournamentTimerComponent implements OnInit, OnDestroy {
 
     // Sync Time
     if (!this.manualTime) return;
+
     const parts = this.manualTime.split(':');
     let seconds = 0;
+
     if (parts.length === 2) {
-      seconds = +parts[0] * 60 + +parts[1];
+      const minutes = parseInt(parts[0], 10);
+      const secs = parseInt(parts[1], 10);
+      if (!isNaN(minutes) && !isNaN(secs)) {
+        seconds = minutes * 60 + secs;
+      }
     } else if (parts.length === 1) {
-      seconds = +parts[0];
+      const parsed = parseInt(parts[0], 10);
+      if (!isNaN(parsed)) {
+        seconds = parsed;
+      }
     }
+
     if (seconds >= 0 && seconds <= this.levelDuration * 60) {
       this.timeLeft = seconds;
       this.elapsedTime = this.levelDuration * 60 - seconds;
+      this.toastShown = false;
+
+      // Restart timer with new time
+      this.startTimestamp = performance.now() - this.elapsedTime * 1000;
+      this.pauseAccumulated = 0;
     }
   }
 }

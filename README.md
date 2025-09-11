@@ -215,3 +215,5 @@ poker-tournament-tracker/
 ├── .gitignore
 └── README.md
 ```
+
+https://medium.com/@dragos.atanasoae_62577/angular-project-structure-guide-small-medium-and-large-projects-e17c361b2029

@@ -23,13 +23,24 @@
             <div class="timer-col">
               <div
                 class="timer-display"
-                [class.ion-color-danger]="timeLeft <= 15"
-                [class.ion-color-primary]="timeLeft > 15"
+                [class.ion-color-danger]="timeLeft <= 30"
+                [class.ion-color-warning]="timeLeft > 30 && timeLeft <= 60"
+                [class.ion-color-primary]="timeLeft > 60"
               >
-                <span class="timer-value" [class.blink-danger]="timeLeft <= 15">
+                <span
+                  class="timer-value"
+                  [class.blink-danger]="timeLeft <= 15"
+                  [class.pulse-warning]="timeLeft > 15 && timeLeft <= 30"
+                >
                   {{ displayMinutes }}:{{ displaySeconds }}
                 </span>
               </div>
+              @if(isPaused){
+              <div class="pause-indicator">
+                <ion-icon name="pause-circle" color="warning"></ion-icon>
+                <span>PAUSED</span>
+              </div>
+              }
             </div>
           </div>
         </ion-card-content>
@@ -37,12 +48,12 @@
       }
 
       <!-- Progress Bar -->
-      @if(currentLevelData){
+      @if(gameStarted && currentLevelData){
       <ion-card aria-label="Level Progress">
         <ion-card-header>
           <ion-card-title class="card-title-flex">
             <ion-icon name="radio-button-on" color="primary"></ion-icon>
-            Level {{ currentLevel + 1 }}
+            Level {{ currentLevel + 1 }} of {{ blindSchedule.length }}
             <span class="duration">({{ currentLevelData.time }} min)</span>
           </ion-card-title>
         </ion-card-header>
@@ -51,8 +62,10 @@
             <div class="progress-bar-bg">
               <div
                 class="progress-bar-fill"
-                [style.width.%]="getProgressPercent(currentLevelData.time)"
-                aria-valuenow="{{ getProgressPercent(currentLevelData.time) }}"
+                [style.width.%]="getProgressPercent()"
+                [class.progress-warning]="getProgressPercent() >= 80"
+                [class.progress-danger]="getProgressPercent() >= 95"
+                aria-valuenow="{{ getProgressPercent() }}"
                 aria-valuemin="0"
                 aria-valuemax="100"
                 role="progressbar"
@@ -62,9 +75,62 @@
               {{ Math.floor(elapsedTime / 60) }}:{{
                 ("0" + (elapsedTime % 60)).slice(-2)
               }}
-              / {{ currentLevelData.time }}:00 min
+              / {{ currentLevelData.time }}:00
+              <span class="remaining-time">
+                ({{ displayMinutes }}:{{ displaySeconds }} left)
+              </span>
             </div>
           </div>
+        </ion-card-content>
+      </ion-card>
+      }
+
+      <!-- Next Level Preview -->
+      @if(gameStarted && currentLevel + 1 < blindSchedule.length){
+      <ion-card aria-label="Next Level Preview" class="next-level-card">
+        <ion-card-header>
+          <ion-card-title class="next-level-title">
+            <ion-icon name="arrow-forward-circle" color="tertiary"></ion-icon>
+            Next Level: {{ currentLevel + 2 }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="next-blinds-row">
+            <div class="next-blind-item">
+              <span class="next-blind-label">Small Blind:</span>
+              <span class="next-blind-value">{{
+                blindSchedule[currentLevel + 1].blind
+              }}</span>
+            </div>
+            <div class="next-blind-item">
+              <span class="next-blind-label">Big Blind:</span>
+              <span class="next-blind-value">{{
+                blindSchedule[currentLevel + 1].blind * 2
+              }}</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+      }
+
+      <!-- Tournament Complete Card -->
+      @if(!gameStarted && blindSchedule.length > 0 && currentLevel >=
+      blindSchedule.length){
+      <ion-card aria-label="Tournament Complete" class="complete-card">
+        <ion-card-header>
+          <ion-card-title class="complete-title">
+            <ion-icon name="trophy" color="success"></ion-icon>
+            Tournament Complete!
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p>
+            Congratulations! You've completed all
+            {{ blindSchedule.length }} levels.
+          </p>
+          <ion-button expand="block" color="success" (click)="restartGame()">
+            Start New Tournament
+          </ion-button>
         </ion-card-content>
       </ion-card>
       }
@@ -74,119 +140,152 @@
     <div class="sticky-card">
       <ion-card aria-label="Blind Settings">
         <ion-card-header>
-          <ion-card-title>Blind Settings</ion-card-title>
-          <ion-card-subtitle
-            >Configure your tournament blinds</ion-card-subtitle
-          >
+          <ion-card-title>Tournament Settings</ion-card-title>
+          <ion-card-subtitle>
+            @if(gameStarted){ Tournament in progress } @else { Configure your
+            tournament blinds }
+          </ion-card-subtitle>
         </ion-card-header>
         <ion-card-content class="ion-no-padding">
-          <ion-item>
-            <ion-label position="floating" for="startingBlind"
-              >Starting Blind</ion-label
-            >
+          <!-- Settings inputs - only editable when game not started -->
+          <ion-item [disabled]="gameStarted">
+            <ion-label position="floating" for="startingBlind">
+              Starting Blind
+            </ion-label>
             <ion-input
               id="startingBlind"
               type="number"
+              min="1"
+              step="1"
               [(ngModel)]="startingBlind"
+              [readonly]="gameStarted"
             ></ion-input>
           </ion-item>
-          <ion-item>
-            <ion-label position="floating" for="blindIncrease"
-              >Blind Increase per Level</ion-label
-            >
+
+          <ion-item [disabled]="gameStarted">
+            <ion-label position="floating" for="blindIncrease">
+              Blind Increase per Level
+            </ion-label>
             <ion-input
               id="blindIncrease"
               type="number"
+              min="1"
+              step="1"
               [(ngModel)]="blindIncrease"
+              [readonly]="gameStarted"
             ></ion-input>
           </ion-item>
-          <ion-item>
-            <ion-label position="floating" for="levelDuration"
-              >Level Duration (minutes)</ion-label
-            >
+
+          <ion-item [disabled]="gameStarted">
+            <ion-label position="floating" for="levelDuration">
+              Level Duration (minutes)
+            </ion-label>
             <ion-input
               id="levelDuration"
               type="number"
+              min="1"
+              max="60"
+              step="1"
               [(ngModel)]="levelDuration"
+              [readonly]="gameStarted"
             ></ion-input>
           </ion-item>
+
+          <!-- Manual sync controls - only shown during game -->
           @if(gameStarted){
           <ion-item class="timer-sync-row">
-            <ion-input
-              type="number"
-              min="1"
-              [max]="blindSchedule.length"
-              placeholder="Level"
-              [(ngModel)]="manualLevel"
-              style="width: 60px; margin-right: 8px"
-            ></ion-input>
-            <ion-input
-              type="text"
-              placeholder="mm:ss"
-              [(ngModel)]="manualTime"
-              style="width: 80px; margin-right: 8px"
-            ></ion-input>
-            <ion-button
-              size="small"
-              (click)="syncTime()"
-              color="primary"
-              slot="end"
-            >
-              Sync
-            </ion-button>
+            <ion-label>Manual Sync:</ion-label>
+            <div class="sync-controls" slot="end">
+              <ion-input
+                type="number"
+                min="1"
+                [max]="blindSchedule.length"
+                placeholder="Level"
+                [(ngModel)]="manualLevel"
+                class="sync-input level-input"
+                aria-label="Manual Level"
+              ></ion-input>
+              <ion-input
+                type="text"
+                placeholder="mm:ss or ss"
+                [(ngModel)]="manualTime"
+                class="sync-input time-input"
+                aria-label="Manual Time"
+                maxlength="5"
+              ></ion-input>
+              <ion-button
+                size="small"
+                (click)="syncTime()"
+                color="primary"
+                [disabled]="!manualLevel && !manualTime"
+              >
+                <ion-icon name="sync" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
           </ion-item>
           }
 
-          <ion-row>
-            <ion-col>
-              <ion-button
-                type="button"
-                expand="block"
-                color="success"
-                (click)="startGame()"
-                [disabled]="gameStarted"
-                aria-label="Start Tournament"
-              >
-                Start
-              </ion-button>
-            </ion-col>
-            <ion-col>
-              <ion-button
-                type="button"
-                expand="block"
-                color="warning"
-                (click)="togglePause()"
-                [disabled]="!gameStarted"
-                aria-label="Pause or Resume Tournament"
-              >
-                {{ isPaused ? "Resume" : "Pause" }}
-              </ion-button>
-            </ion-col>
-          </ion-row>
-          <ion-row>
-            <ion-col>
-              <ion-button
-                type="button"
-                expand="block"
-                (click)="generateBlinds()"
-                aria-label="Show Blinds"
-              >
-                Show Blinds
-              </ion-button>
-            </ion-col>
-            <ion-col>
-              <ion-button
-                type="button"
-                expand="block"
-                color="danger"
-                (click)="restartGame()"
-                [disabled]="!gameStarted"
-                aria-label="Restart Tournament"
-              >
-                Restart
-              </ion-button>
-            </ion-col>
-          </ion-row>
+          <!-- Action buttons -->
+          <div class="action-buttons">
+            <ion-row>
+              <ion-col>
+                <ion-button
+                  type="button"
+                  expand="block"
+                  color="success"
+                  (click)="startGame()"
+                  [disabled]="gameStarted"
+                  aria-label="Start Tournament"
+                >
+                  <ion-icon name="play" slot="start"></ion-icon>
+                  Start
+                </ion-button>
+              </ion-col>
+              <ion-col>
+                <ion-button
+                  type="button"
+                  expand="block"
+                  [color]="isPaused ? 'success' : 'warning'"
+                  (click)="togglePause()"
+                  [disabled]="!gameStarted"
+                  aria-label="Pause or Resume Tournament"
+                >
+                  <ion-icon
+                    [name]="isPaused ? 'play' : 'pause'"
+                    slot="start"
+                  ></ion-icon>
+                  {{ isPaused ? "Resume" : "Pause" }}
+                </ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-button
+                  type="button"
+                  expand="block"
+                  color="tertiary"
+                  (click)="generateBlinds()"
+                  aria-label="Show Blinds Schedule"
+                >
+                  <ion-icon name="list" slot="start"></ion-icon>
+                  Show Schedule
+                </ion-button>
+              </ion-col>
+              <ion-col>
+                <ion-button
+                  type="button"
+                  expand="block"
+                  color="danger"
+                  (click)="restartGame()"
+                  [disabled]="!gameStarted"
+                  aria-label="Restart Tournament"
+                >
+                  <ion-icon name="refresh" slot="start"></ion-icon>
+                  Restart
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </div>
         </ion-card-content>
       </ion-card>
     </div>

@@ -1,0 +1,206 @@
+<app-header />
+<app-side-bar />
+
+<ion-content [fullscreen]="true" class="ion-padding-top">
+  <!-- Main content area -->
+  <div class="content-area">
+    <!-- Timer Display -->
+    <ion-card>
+      <ion-card-content>
+        <div class="timer-display">
+          <h1>{{ getFormattedTime() }}</h1>
+          <ion-progress-bar
+            [value]="getProgressPercentage() / 100"
+            [color]="
+              getProgressPercentage() > 90
+                ? 'danger'
+                : getProgressPercentage() > 80
+                ? 'warning'
+                : 'success'
+            "
+          >
+          </ion-progress-bar>
+        </div>
+
+        <ion-grid class="blinds-levels-grid">
+          <ion-row>
+            <ion-col size="6">
+              <div class="level-card">
+                <span class="card-label">Level</span>
+                <h2 class="primary-value">{{ timerState.currentLevel }}</h2>
+              </div>
+            </ion-col>
+            <ion-col size="6">
+              <div class="blinds-card">
+                <span class="card-label"
+                  >Blinds{{ anteEnabled ? " + Ante" : "" }}</span
+                >
+                <h2 class="primary-value">
+                  {{ timerState.currentSmallBlind }}/{{
+                    timerState.currentBigBlind
+                  }}
+                  @if(anteEnabled){
+                  <span class="ante-value"
+                    >+ {{ timerState.currentBigBlind }}</span
+                  >
+                  }
+                </h2>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Sticky Bottom Card -->
+  <div class="sticky-bottom">
+    <ion-card>
+      <ion-card-content>
+        <!-- Tournament Settings -->
+        <ion-list>
+          <!-- Main Settings in 2x2 Grid -->
+          <ion-grid class="ion-no-padding">
+            <ion-row>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="floating">Small Blind</ion-label>
+                  <ion-input
+                    type="number"
+                    [(ngModel)]="smallBlind"
+                    placeholder="Enter small blind"
+                    [disabled]="!canModifySettings()"
+                  >
+                  </ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="floating">Duration (minutes)</ion-label>
+                  <ion-input
+                    type="number"
+                    [(ngModel)]="duration"
+                    placeholder="Enter duration"
+                    [disabled]="!canModifySettings()"
+                  >
+                  </ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="floating">Number of Levels</ion-label>
+                  <ion-input
+                    type="number"
+                    [(ngModel)]="levels"
+                    placeholder="Enter levels"
+                    [disabled]="!canModifySettings()"
+                  >
+                  </ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-toggle [(ngModel)]="anteEnabled" slot="start"
+                    >Ante
+                  </ion-toggle>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+
+          <!-- Sync Controls -->
+          <ion-grid class="ion-no-padding ion-margin-top">
+            <ion-row>
+              <ion-col size="4">
+                <ion-item fill="outline" class="sync-input">
+                  <ion-label position="stacked">Level</ion-label>
+                  <ion-input
+                    type="number"
+                    [(ngModel)]="syncLevel"
+                    placeholder="Enter level"
+                    min="1"
+                    [max]="timerState.totalLevels"
+                  >
+                  </ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="5">
+                <ion-item fill="outline" class="sync-input">
+                  <ion-label position="stacked">Time (mm:ss)</ion-label>
+                  <ion-input
+                    [(ngModel)]="syncTime"
+                    placeholder="Enter time"
+                    maxlength="5"
+                  >
+                  </ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="3" class="ion-align-self-center">
+                <ion-button
+                  expand="block"
+                  color="tertiary"
+                  (click)="syncTimer()"
+                  [disabled]="!isValidSync()"
+                  class="sync-button"
+                >
+                  <ion-icon name="sync" slot="icon-only"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-list>
+
+        <!-- Action Buttons -->
+        <div class="ion-margin-top">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="4">
+                <ion-button
+                  expand="block"
+                  color="success"
+                  (click)="startTimer()"
+                  [disabled]="
+                    !isValidInput() ||
+                    (timerState.isRunning && !timerState.isPaused)
+                  "
+                >
+                  <ion-icon name="play" slot="start"></ion-icon>
+                  {{
+                    !timerState.isRunning && !timerState.isPaused
+                      ? "Start"
+                      : "Resume"
+                  }}
+                </ion-button>
+              </ion-col>
+
+              <ion-col size="4">
+                <ion-button
+                  expand="block"
+                  color="warning"
+                  (click)="pauseTimer()"
+                  [disabled]="!timerState.isRunning"
+                >
+                  <ion-icon name="pause" slot="start"></ion-icon>
+                  Pause
+                </ion-button>
+              </ion-col>
+
+              <ion-col size="4">
+                <ion-button
+                  expand="block"
+                  color="danger"
+                  (click)="resetTimer()"
+                >
+                  <ion-icon name="refresh" slot="start"></ion-icon>
+                  Reset
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
