@@ -20,9 +20,7 @@ export class BlindStructureComponent implements OnInit, AfterViewInit {
 
   constructor(private modalController: ModalController) {}
 
-  ngOnInit() {
-    console.log(this.currentLevel);
-  }
+  ngOnInit() {}
 
   close() {
     this.modalController.dismiss();

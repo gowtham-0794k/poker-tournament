@@ -80,7 +80,6 @@ export class TournamentTimerService {
         color: color,
       });
       await toast.present();
-      console.log('Toast shown:', message);
     } catch (error) {
       console.error('Error showing toast:', error);
     }
@@ -353,7 +352,6 @@ export class TournamentTimerService {
 
     // Show tournament completion toast
     this.showToast('🏆 Tournament Complete! Congratulations! 🏆', 'success');
-    console.log('Tournament Complete!');
   }
 
   // Get progress percentage (0-100)
