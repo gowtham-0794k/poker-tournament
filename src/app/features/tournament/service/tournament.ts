@@ -1,5 +1,12 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, interval, Subscription } from 'rxjs';
+import {
+  map,
+  takeWhile,
+  tap,
+  distinctUntilChanged,
+  filter,
+} from 'rxjs/operators';
 import { ToastController } from '@ionic/angular';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
@@ -53,10 +60,14 @@ export class TournamentTimerService {
     anteEnabled: false,
   };
 
+  // RxJS timer observables and subscriptions
+  private timerSubscription: Subscription | null = null;
+  private readonly TIMER_INTERVAL_MS = 100; // Update every 100ms for smooth display
+
+  // Timing tracking
   private startTime: number = 0;
   private pausedTime: number = 0;
   private totalPausedDuration: number = 0;
-  private animationFrameId: number | null = null;
 
   // Toast notification tracking
   private toastShown80: boolean = false;
@@ -65,7 +76,117 @@ export class TournamentTimerService {
   constructor(
     private ngZone: NgZone,
     private toastController: ToastController
-  ) {}
+  ) {
+    this.setupTimerObservables();
+  }
+
+  // Setup RxJS timer observables
+  private setupTimerObservables(): void {
+    // Create progress percentage observable
+    const progressPercentage$ = this.timerState$.pipe(
+      map((state) => this.calculateProgressPercentage(state)),
+      distinctUntilChanged()
+    );
+
+    // Monitor progress for toast notifications
+    progressPercentage$
+      .pipe(filter((percentage) => percentage >= 80 && !this.toastShown80))
+      .subscribe(() => {
+        this.toastShown80 = true;
+        this.showToast('⚠️ Level 80% Complete !', 'warning');
+        this.showTimerNotification();
+      });
+
+    progressPercentage$
+      .pipe(filter((percentage) => percentage >= 90 && !this.toastShown90))
+      .subscribe(() => {
+        this.toastShown90 = true;
+        this.showToast('🚨 Level 90% Complete !', 'danger');
+        this.showTimerNotification();
+      });
+  }
+
+  // Calculate progress percentage
+  private calculateProgressPercentage(state: TimerState): number {
+    const totalMs = this.config.durationMinutes * 60 * 1000;
+    const elapsed = totalMs - state.timeRemainingMs;
+    return Math.min(100, Math.max(0, (elapsed / totalMs) * 100));
+  }
+
+  // Start the RxJS-based timer
+  private startRxJSTimer(): void {
+    if (this.timerSubscription) {
+      this.timerSubscription.unsubscribe();
+    }
+
+    this.timerSubscription = interval(this.TIMER_INTERVAL_MS)
+      .pipe(
+        map(() => Date.now()),
+        map((currentTime) => {
+          const elapsed =
+            currentTime - this.startTime - this.totalPausedDuration;
+          const levelDurationMs = this.config.durationMinutes * 60 * 1000;
+          return Math.max(0, levelDurationMs - elapsed);
+        }),
+        takeWhile(() => this.getCurrentState().isRunning),
+        tap((timeRemainingMs) => {
+          const currentState = this.getCurrentState();
+
+          if (timeRemainingMs <= 0) {
+            // Level complete - move to next level
+            this.handleLevelComplete();
+          } else {
+            // Update timer state
+            const updatedState: TimerState = {
+              ...currentState,
+              timeRemainingMs,
+            };
+            this.timerStateSubject.next(updatedState);
+          }
+        })
+      )
+      .subscribe();
+  }
+
+  // Handle level completion
+  private handleLevelComplete(): void {
+    const currentState = this.getCurrentState();
+
+    if (currentState.currentLevel >= currentState.totalLevels) {
+      // Tournament finished
+      this.tournamentComplete();
+      return;
+    }
+
+    const nextLevel = currentState.currentLevel + 1;
+    const nextSmallBlind =
+      currentState.currentSmallBlind + currentState.currentBlindsIncrement;
+    const nextBigBlind = nextSmallBlind * 2;
+
+    // Show level completion toast
+    this.showToast(
+      `🎉 Level ${currentState.currentLevel} Complete! Moving to Level ${nextLevel}`,
+      'success'
+    );
+
+    this.showTimerNotification();
+
+    // Reset timer for next level
+    this.startTime = Date.now();
+    this.totalPausedDuration = 0;
+    this.resetToastFlags();
+
+    const newState: TimerState = {
+      ...currentState,
+      currentLevel: nextLevel,
+      currentSmallBlind: nextSmallBlind,
+      currentBigBlind: nextBigBlind,
+      timeRemainingMs: this.config.durationMinutes * 60 * 1000,
+      anteEnabled: this.config.anteEnabled,
+    };
+
+    this.timerStateSubject.next(newState);
+  }
 
   // Show toast notification
   private async showToast(
@@ -87,7 +208,8 @@ export class TournamentTimerService {
 
   async showTimerNotification() {
     const hasPermission = await this.ensureNotificationPermission();
-    if (!hasPermission) return; // Do not schedule if permission denied
+    if (!hasPermission) return;
+
     const currentValues = this.getCurrentState();
     await LocalNotifications.schedule({
       notifications: [
@@ -97,26 +219,11 @@ export class TournamentTimerService {
             currentValues.currentLevel
           } | Blinds: ${currentValues.currentSmallBlind}/${
             currentValues.currentBigBlind
-          } `,
+          }`,
           id: 1,
         },
       ],
     });
-  }
-
-  // Check and show progress toasts
-  private checkProgressToasts(progressPercentage: number): void {
-    if (progressPercentage >= 80 && !this.toastShown80) {
-      this.toastShown80 = true;
-      this.showToast('⚠️ Level 80% Complete !', 'warning');
-      this.showTimerNotification();
-    }
-
-    if (progressPercentage >= 90 && !this.toastShown90) {
-      this.toastShown90 = true;
-      this.showToast('🚨 Level 90% Complete !', 'danger');
-      this.showTimerNotification();
-    }
   }
 
   // Reset toast flags for new level
@@ -164,7 +271,7 @@ export class TournamentTimerService {
       // Fresh start
       this.startTime = Date.now();
       this.totalPausedDuration = 0;
-      this.resetToastFlags(); // Reset when starting fresh
+      this.resetToastFlags();
     }
 
     const newState: TimerState = {
@@ -174,16 +281,7 @@ export class TournamentTimerService {
     };
 
     this.timerStateSubject.next(newState);
-    this.startTimerLoop();
-  }
-
-  anteToggle(event: boolean): void {
-    const currentState = this.getCurrentState();
-    const newState: TimerState = {
-      ...currentState,
-      anteEnabled: event,
-    };
-    this.timerStateSubject.next(newState);
+    this.startRxJSTimer();
   }
 
   // Pause timer
@@ -196,6 +294,12 @@ export class TournamentTimerService {
 
     this.pausedTime = Date.now();
 
+    // Stop the timer subscription
+    if (this.timerSubscription) {
+      this.timerSubscription.unsubscribe();
+      this.timerSubscription = null;
+    }
+
     const newState: TimerState = {
       ...currentState,
       isRunning: false,
@@ -203,12 +307,16 @@ export class TournamentTimerService {
     };
 
     this.timerStateSubject.next(newState);
-    this.stopTimerLoop();
   }
 
   // Reset timer
   reset(): void {
-    this.stopTimerLoop();
+    // Stop any running timer
+    if (this.timerSubscription) {
+      this.timerSubscription.unsubscribe();
+      this.timerSubscription = null;
+    }
+
     this.resetToastFlags();
 
     const newState: TimerState = {
@@ -231,12 +339,20 @@ export class TournamentTimerService {
     this.totalPausedDuration = 0;
   }
 
+  anteToggle(event: boolean): void {
+    const currentState = this.getCurrentState();
+    const newState: TimerState = {
+      ...currentState,
+      anteEnabled: event,
+    };
+    this.timerStateSubject.next(newState);
+  }
+
   // Get current state
   getCurrentState(): TimerState {
     return this.timerStateSubject.value;
   }
 
-  // Code Generated by Sidekick is for learning and experimentation purposes only.
   getFormattedTime(): string {
     const currentState = this.getCurrentState();
     const totalSeconds = Math.ceil(currentState.timeRemainingMs / 1000);
@@ -252,118 +368,24 @@ export class TournamentTimerService {
     );
   }
 
-  // Private: Start timer loop using requestAnimationFrame for precision
-  private startTimerLoop(): void {
-    this.ngZone.runOutsideAngular(() => {
-      const tick = () => {
-        const now = Date.now();
-        const elapsed = now - this.startTime - this.totalPausedDuration;
-        const levelDurationMs = this.config.durationMinutes * 60 * 1000;
-        const remaining = Math.max(0, levelDurationMs - elapsed);
-
-        this.ngZone.run(() => {
-          const currentState = this.getCurrentState();
-
-          if (remaining <= 0) {
-            this.nextLevel();
-          } else {
-            const updatedState: TimerState = {
-              ...currentState,
-              timeRemainingMs: remaining,
-            };
-            this.timerStateSubject.next(updatedState);
-
-            // Check for toast notifications
-            const progressPercentage = this.getProgressPercentage();
-            this.checkProgressToasts(progressPercentage);
-          }
-        });
-
-        if (this.getCurrentState().isRunning) {
-          this.animationFrameId = requestAnimationFrame(tick);
-        }
-      };
-
-      this.animationFrameId = requestAnimationFrame(tick);
-    });
-  }
-
-  // Private: Stop timer loop
-  private stopTimerLoop(): void {
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
-    }
-  }
-
-  // Private: Move to next level
-  private nextLevel(): void {
-    const currentState = this.getCurrentState();
-
-    if (currentState.currentLevel >= currentState.totalLevels) {
-      // Tournament finished
-      this.tournamentComplete();
-      return;
-    }
-
-    const nextLevel = currentState.currentLevel + 1;
-    const nextSmallBlind =
-      currentState.currentSmallBlind + currentState.currentBlindsIncrement;
-    const nextBigBlind = nextSmallBlind * 2;
-
-    // Show level completion toast
-    this.showToast(
-      `🎉 Level ${currentState.currentLevel} Complete! Moving to Level ${nextLevel}`,
-      'success'
-    );
-
-    this.showTimerNotification();
-
-    // Reset timer for next level
-    this.startTime = Date.now();
-    this.totalPausedDuration = 0;
-    this.resetToastFlags(); // Reset for new level
-
-    const newState: TimerState = {
-      ...currentState,
-      currentLevel: nextLevel,
-      currentSmallBlind: nextSmallBlind,
-      currentBigBlind: nextBigBlind,
-      timeRemainingMs: this.config.durationMinutes * 60 * 1000,
-      anteEnabled: this.config.anteEnabled,
-    };
-
-    this.timerStateSubject.next(newState);
-  }
-
-  // Private: Handle tournament completion
-  private tournamentComplete(): void {
-    // Show tournament completion toast
-    this.showToast('🏆 Tournament Complete! Congratulations! 🏆', 'success');
-    this.reset();
-  }
-
   // Get progress percentage (0-100)
   getProgressPercentage(): number {
-    const currentState = this.getCurrentState();
-    const totalMs = this.config.durationMinutes * 60 * 1000;
-    const elapsed = totalMs - currentState.timeRemainingMs;
-    return Math.min(100, Math.max(0, (elapsed / totalMs) * 100));
+    return this.calculateProgressPercentage(this.getCurrentState());
   }
 
-  // Code Generated by Sidekick is for learning and experimentation purposes only.
+  // Sync to specific level and time
   syncToLevel(level: number, timeRemainingMs: number): void {
     if (level < 1 || level > this.config.totalLevels) {
       return; // Invalid level
     }
 
-    // Use incremental logic for blinds
+    // Calculate blinds for the specified level
     const smallBlind =
       this.config.initialSmallBlind +
       this.config.initialBlindsIncrement * (level - 1);
     const bigBlind = smallBlind * 2;
 
-    // Calculate new timing references for accurate sync
+    // Calculate timing references for accurate sync
     const currentState = this.getCurrentState();
     const levelDurationMs = this.config.durationMinutes * 60 * 1000;
     const elapsedMs = levelDurationMs - timeRemainingMs;
@@ -371,7 +393,7 @@ export class TournamentTimerService {
     // Update timing references to match the synced time
     this.startTime = Date.now() - elapsedMs;
     this.totalPausedDuration = 0;
-    this.resetToastFlags(); // Reset for synced level
+    this.resetToastFlags();
 
     // If timer was paused, keep it paused but update the pause reference
     if (currentState.isPaused) {
@@ -396,25 +418,30 @@ export class TournamentTimerService {
     );
   }
 
-  async ensureNotificationPermission() {
-    // Step 1: Check current permission status
+  // Handle tournament completion
+  private tournamentComplete(): void {
+    this.showToast('🏆 Tournament Complete! Congratulations! 🏆', 'success');
+    this.reset();
+  }
+
+  async ensureNotificationPermission(): Promise<boolean> {
     const permissionStatus = await LocalNotifications.checkPermissions();
 
-    // Step 2: If not granted, request permission
     if (permissionStatus.display !== 'granted') {
       const requestStatus = await LocalNotifications.requestPermissions();
       if (requestStatus.display !== 'granted') {
-        // Permission denied, handle accordingly (e.g., show message)
         console.warn('Notification permission not granted.');
         return false;
       }
     }
-    // Permission granted, safe to schedule notifications
     return true;
   }
 
-  // Cleanup
+  // Cleanup method
   destroy(): void {
-    this.stopTimerLoop();
+    if (this.timerSubscription) {
+      this.timerSubscription.unsubscribe();
+      this.timerSubscription = null;
+    }
   }
 }
