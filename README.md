@@ -217,3 +217,5 @@ poker-tournament-tracker/
 ```
 
 https://medium.com/@dragos.atanasoae_62577/angular-project-structure-guide-small-medium-and-large-projects-e17c361b2029
+
+https://dribbble.com/shots/24135771-Mobile-app-Crypto-wallet
