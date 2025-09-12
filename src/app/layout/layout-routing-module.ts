@@ -19,6 +19,13 @@ const routes: Routes = [
             (m) => m.TournamentModule
           ),
       },
+      {
+        path: 'count-down',
+        loadChildren: () =>
+          import('../features/count-down/count-down-module').then(
+            (m) => m.CountDownModule
+          ),
+      },
     ],
   },
 ];

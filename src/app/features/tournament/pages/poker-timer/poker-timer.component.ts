@@ -9,7 +9,6 @@ import {
   TournamentTimerService,
 } from '../../service/tournament';
 import { LevelSchedulesComponent } from 'src/app/shared/components/level-schedules/level-schedules.component';
-import { LocalNotifications } from '@capacitor/local-notifications';
 
 @Component({
   selector: 'app-poker-timer',
