@@ -1,0 +1,66 @@
+<div
+  class="circular-progress-container"
+  [style.width.px]="size"
+  [style.height.px]="size"
+>
+  <!-- SVG Circle Progress -->
+  <svg
+    class="progress-ring"
+    [attr.width]="size"
+    [attr.height]="size"
+    [style.transform]="'rotate(-90deg)'"
+  >
+    <!-- Background Circle -->
+    <circle
+      class="progress-ring-bg"
+      [attr.cx]="size / 2"
+      [attr.cy]="size / 2"
+      [attr.r]="radius"
+      [attr.stroke]="backgroundColor"
+      [attr.stroke-width]="strokeWidth"
+      fill="transparent"
+    ></circle>
+
+    <!-- Progress Circle -->
+    <circle
+      class="progress-ring-progress"
+      [class.animated]="animated"
+      [attr.cx]="size / 2"
+      [attr.cy]="size / 2"
+      [attr.r]="radius"
+      [attr.stroke]="getProgressColor()"
+      [attr.stroke-width]="strokeWidth"
+      [attr.stroke-dasharray]="strokeDasharray"
+      [attr.stroke-dashoffset]="strokeDashoffset"
+      [style.transition]="
+        animated
+          ? 'stroke-dashoffset ' +
+            animationDuration +
+            's ease-in-out, stroke ' +
+            animationDuration +
+            's ease-in-out'
+          : 'none'
+      "
+      fill="transparent"
+      stroke-linecap="round"
+    ></circle>
+  </svg>
+
+  <!-- Center Content -->
+  <div class="progress-content">
+    <!-- Percentage -->
+    <div class="progress-percentage" *ngIf="showPercentage">
+      {{ getPercentageText() }}
+    </div>
+
+    <!-- Counter -->
+    <div class="progress-counter" *ngIf="showCounter">
+      {{ getCounterText() }}
+    </div>
+
+    <!-- Label -->
+    <div class="progress-label" *ngIf="label">
+      {{ label }}
+    </div>
+  </div>
+</div>

@@ -9,6 +9,8 @@ import {
   TournamentTimerService,
 } from '../../service/tournament';
 import { LevelSchedulesComponent } from 'src/app/shared/components/level-schedules/level-schedules.component';
+import { BlindSettingsModalComponent } from 'src/app/shared/components/blind-settings-modal/blind-settings-modal.component';
+import { SettingsData } from 'src/app/shared/model/tournament.model';
 
 @Component({
   selector: 'app-poker-timer',
@@ -95,11 +97,6 @@ export class PokerTimerComponent implements OnInit, OnDestroy {
     this.tournamentTimerService.pause();
   }
 
-  // Reset timer
-  resetTimer() {
-    this.tournamentTimerService.reset();
-  }
-
   // Sync timer to manual values
   syncTimer() {
     if (!this.isValidSync()) {
@@ -176,6 +173,36 @@ export class PokerTimerComponent implements OnInit, OnDestroy {
       backdropDismiss: true,
     });
     await modal.present();
+  }
+
+  async openTournamentSettingModal() {
+    const modal = await this.modalController.create({
+      component: BlindSettingsModalComponent,
+      cssClass: 'blinds-tournament-setting-modal',
+      backdropDismiss: true,
+      componentProps: {
+        canModifySettings: !this.canModifySettings(),
+        inputsValues: {
+          smallBlind: this.smallBlind,
+          blindsIncrement: this.blindsIncrement,
+          duration: this.duration,
+          levels: this.levels,
+        },
+      },
+    });
+
+    await modal.present();
+
+    const { data } = await modal.onDidDismiss();
+    this.assignSettingsValues(data);
+  }
+
+  assignSettingsValues(data: SettingsData) {
+    const { smallBlind, blindsIncrement, duration, levels } = data;
+    this.smallBlind = smallBlind;
+    this.blindsIncrement = blindsIncrement;
+    this.duration = duration;
+    this.levels = levels;
   }
 
   toggleAnte() {

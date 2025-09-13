@@ -6,6 +6,7 @@ import { BlindStructureComponent } from './components/blind-structure-component/
 import { FormsModule } from '@angular/forms';
 import { SideBarComponent } from './components/side-bar/side-bar.component';
 import { LevelSchedulesComponent } from './components/level-schedules/level-schedules.component';
+import { ProgressBarComponent } from './components/progress-bar/progress-bar.component';
 
 @NgModule({
   declarations: [
@@ -13,6 +14,7 @@ import { LevelSchedulesComponent } from './components/level-schedules/level-sche
     BlindStructureComponent,
     SideBarComponent,
     LevelSchedulesComponent,
+    ProgressBarComponent,
   ],
   imports: [CommonModule, IonicModule, FormsModule],
   exports: [
@@ -20,6 +22,7 @@ import { LevelSchedulesComponent } from './components/level-schedules/level-sche
     BlindStructureComponent,
     SideBarComponent,
     LevelSchedulesComponent,
+    ProgressBarComponent,
   ],
 })
 export class SharedModule {}
