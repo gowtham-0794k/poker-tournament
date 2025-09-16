@@ -19,52 +19,12 @@
   }
 }
 
-.blinds-levels-grid {
-  margin-top: 20px;
-  .level-card,
-  .blinds-card {
-    background: var(--ion-color-light);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    .primary-value {
-      font-size: 2.5rem;
-      font-weight: 600;
-      color: var(--ion-color-dark);
-      margin: 0;
-      line-height: 1.2;
-      .ante-value {
-        font-size: 1.2rem;
-        color: var(--ion-color-tertiary);
-        font-weight: 500;
-        display: block;
-        margin-top: 4px;
-      }
-    }
-    .card-label {
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: var(--ion-color-medium);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-}
-
 .sticky-bottom {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  background: var(--ion-background-color);
-  border-top: 1px solid var(--ion-color-light-shade);
-  ion-card {
-    margin: 0;
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
-  }
 }
 
 // Responsive adjustments
@@ -84,9 +44,6 @@
       }
     }
   }
-  .sticky-bottom ion-card {
-    border-radius: 12px 12px 0 0;
-  }
 }
 
 @media (max-width: 480px) {
@@ -101,5 +58,84 @@
         font-size: 1.5rem;
       }
     }
+  }
+}
+
+.big-blind-card {
+  .card-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .big-blind-info {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.right-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.blinds-card {
+  .card-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .blinds-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--ion-color-primary-tint);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ion-text-color);
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .blinds-info {
+    display: flex;
+    flex-direction: column;
+
+    .blinds-name {
+      color: var(--ion-text-color);
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .blinds-symbol {
+      color: var(--ion-color-success);
+    }
+  }
+}
+
+.right-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  .blinds-price {
+    color: var(--ion-text-color);
+    font-size: 16px;
+    font-weight: 600;
   }
 }
