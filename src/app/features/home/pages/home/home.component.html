@@ -1,1 +1,156 @@
-<p>home works!</p>
+<app-header />
+<app-side-bar />
+
+<ion-content [fullscreen]="true" class="ion-padding-top">
+  <div class="content-area">
+    <!-- Timer Display Card -->
+    <ion-card>
+      <ion-card-content>
+        <div
+          class="timer-display"
+          [ngClass]="{ 'danger-mode': isDangerMode() }"
+        >
+          <div class="time-units">
+            <div
+              class="time-unit"
+              [ngClass]="{ 'danger-unit': isDangerMode() }"
+            >
+              <div class="unit-value">{{ getHours() }}</div>
+              <div class="unit-label">Hours</div>
+            </div>
+            <div
+              class="time-separator"
+              [ngClass]="{ 'danger-separator': isDangerMode() }"
+            >
+              :
+            </div>
+            <div
+              class="time-unit"
+              [ngClass]="{ 'danger-unit': isDangerMode() }"
+            >
+              <div class="unit-value">{{ getMinutes() }}</div>
+              <div class="unit-label">Minutes</div>
+            </div>
+            <div
+              class="time-separator"
+              [ngClass]="{ 'danger-separator': isDangerMode() }"
+            >
+              :
+            </div>
+            <div
+              class="time-unit"
+              [ngClass]="{ 'danger-unit': isDangerMode() }"
+            >
+              <div class="unit-value">{{ getSeconds() }}</div>
+              <div class="unit-label">Seconds</div>
+            </div>
+          </div>
+          <ion-progress-bar
+            [value]="getProgressPercentage() / 100"
+            [color]="
+              getProgressPercentage() > 90
+                ? 'danger'
+                : getProgressPercentage() > 80
+                ? 'warning'
+                : 'success'
+            "
+          >
+          </ion-progress-bar>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Time Input Card -->
+    <ion-card>
+      <ion-card-content>
+        <ion-grid class="ion-no-padding">
+          <ion-row>
+            <ion-col size="6">
+              <ion-label position="stacked">Hours</ion-label>
+              <ion-input
+                type="number"
+                [(ngModel)]="inputHours"
+                (ionFocus)="clearInputIfZero('hours')"
+                (ionBlur)="resetToZeroIfEmpty('hours')"
+                min="0"
+                max="23"
+                [disabled]="isRunning"
+                placeholder="0"
+              >
+              </ion-input>
+            </ion-col>
+            <ion-col size="6">
+              <ion-label position="stacked">Minutes</ion-label>
+              <ion-input
+                type="number"
+                [(ngModel)]="inputMinutes"
+                (ionFocus)="clearInputIfZero('minutes')"
+                (ionBlur)="resetToZeroIfEmpty('minutes')"
+                min="0"
+                max="59"
+                [disabled]="isRunning"
+                placeholder="0"
+              >
+              </ion-input>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action Buttons Card -->
+    <ion-card class="button-card">
+      <ion-card-content class="ion-padding">
+        <ion-grid class="ion-no-padding">
+          <ion-row>
+            <ion-col *ngIf="!hasStarted" size="4">
+              <ion-button
+                expand="block"
+                color="success"
+                (click)="startCountdown()"
+                [disabled]="inputHours <= 0 && inputMinutes <= 0"
+              >
+                Start
+              </ion-button>
+            </ion-col>
+            <ion-col [size]="hasStarted ? '6' : '4'">
+              <ion-button
+                expand="block"
+                color="warning"
+                (click)="togglePauseResume()"
+                [disabled]="!isRunning && !isPaused"
+              >
+                {{ getPauseButtonLabel() }}
+              </ion-button>
+            </ion-col>
+            <ion-col [size]="hasStarted ? '6' : '4'">
+              <ion-button
+                expand="block"
+                color="danger"
+                (click)="resetCountdown()"
+              >
+                Reset
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Status Message -->
+    <ion-card
+      *ngIf="isRunning || (!isRunning && remainingTime === 0 && hasStarted)"
+    >
+      <ion-card-content class="ion-text-center">
+        <div
+          [ngClass]="{
+            'status-running': isRunning,
+            'status-completed': !isRunning && remainingTime === 0 && hasStarted
+          }"
+        >
+          {{ isRunning ? "Timer is running..." : "Countdown completed!" }}
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
