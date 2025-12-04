@@ -6,19 +6,41 @@
     <!-- Timer Display Card -->
     <ion-card>
       <ion-card-content>
-        <div class="timer-display">
+        <div
+          class="timer-display"
+          [ngClass]="{ 'danger-mode': isDangerMode() }"
+        >
           <div class="time-units">
-            <div class="time-unit">
+            <div
+              class="time-unit"
+              [ngClass]="{ 'danger-unit': isDangerMode() }"
+            >
               <div class="unit-value">{{ getHours() }}</div>
               <div class="unit-label">Hours</div>
             </div>
-            <div class="time-separator">:</div>
-            <div class="time-unit">
+            <div
+              class="time-separator"
+              [ngClass]="{ 'danger-separator': isDangerMode() }"
+            >
+              :
+            </div>
+            <div
+              class="time-unit"
+              [ngClass]="{ 'danger-unit': isDangerMode() }"
+            >
               <div class="unit-value">{{ getMinutes() }}</div>
               <div class="unit-label">Minutes</div>
             </div>
-            <div class="time-separator">:</div>
-            <div class="time-unit">
+            <div
+              class="time-separator"
+              [ngClass]="{ 'danger-separator': isDangerMode() }"
+            >
+              :
+            </div>
+            <div
+              class="time-unit"
+              [ngClass]="{ 'danger-unit': isDangerMode() }"
+            >
               <div class="unit-value">{{ getSeconds() }}</div>
               <div class="unit-label">Seconds</div>
             </div>

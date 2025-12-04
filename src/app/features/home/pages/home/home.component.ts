@@ -101,6 +101,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Check if timer is in danger state (10 seconds or less)
+   */
+  isDangerMode(): boolean {
+    return this.remainingTime <= 10 && this.remainingTime > 0 && this.isRunning;
+  }
+
+  /**
    * Format time from seconds to MM:SS format
    */
   formatTime(seconds: number): string {
